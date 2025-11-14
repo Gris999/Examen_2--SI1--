@@ -18,6 +18,21 @@
       <div class="col-md-4">
         <input type="text" name="q" value="{{ $q }}" class="form-control" placeholder="Buscar (nombre, correo)">
       </div>
+      <div class="col-md-3">
+        <select name="rol" class="form-select">
+          <option value="">Todos los roles</option>
+          @foreach($roles as $r)
+            <option value="{{ $r->id_rol }}" @selected(($rolId ?? null)==$r->id_rol)>{{ $r->nombre }}</option>
+          @endforeach
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select name="estado" class="form-select">
+          <option value="">Todos</option>
+          <option value="1" @selected(($estado ?? '')==='1')>Activos</option>
+          <option value="0" @selected(($estado ?? '')==='0')>Inactivos</option>
+        </select>
+      </div>
       <div class="col-md-2 d-grid">
         <button class="btn btn-outline-secondary">Filtrar</button>
       </div>
@@ -36,7 +51,7 @@
           <th>Teléfono</th>
           <th>Estado</th>
           <th>Roles</th>
-          <th style="width:120px">Acciones</th>
+          <th style="width:220px">Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -52,9 +67,13 @@
             <td>{{ $nombres }}</td>
             <td class="text-end">
               <a href="{{ route('usuarios.edit',$u->id_usuario) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
-              <form action="{{ route('usuarios.destroy',$u->id_usuario) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar usuario?')">
-                @csrf @method('DELETE')
-                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+              <form action="{{ route('usuarios.toggle',$u->id_usuario) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Cambiar estado del usuario?')">
+                @csrf
+                <button class="btn btn-sm btn-outline-warning"><i class="bi bi-power"></i></button>
+              </form>
+              <form action="{{ route('usuarios.reset',$u->id_usuario) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Resetear contraseña? Se mostrará una temporal.')">
+                @csrf
+                <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-key"></i></button>
               </form>
             </td>
           </tr>
@@ -67,4 +86,3 @@
   <div class="card-footer bg-white">{{ $users->links('vendor.pagination.teal') }}</div>
 </div>
 @endsection
-

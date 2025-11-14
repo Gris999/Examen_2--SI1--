@@ -9,6 +9,7 @@
   </div>
   <div class="d-none d-lg-flex gap-2">
     <a href="{{ route('historial.export', request()->query()) }}" class="btn btn-outline-secondary"><i class="bi bi-download me-1"></i>Excel (CSV)</a>
+    <a href="{{ route('historial.xlsx', request()->query()) }}" class="btn btn-outline-success"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Excel (XLS)</a>
     <a href="{{ route('historial.print', request()->query()) }}" target="_blank" class="btn btn-outline-primary"><i class="bi bi-printer me-1"></i>Imprimir</a>
     <a href="{{ route('historial.pdf', request()->query()) }}" class="btn btn-teal"><i class="bi bi-file-earmark-pdf me-1"></i>PDF</a>
   </div>
@@ -79,7 +80,8 @@
     <div class="col-12">
       <div class="card">
         <div class="card-body">
-          <h6 class="mb-3">Resumen por estado</h6>
+          <h6 class="mb-1">Resumen por estado</h6>
+          <div id="chartSummary" class="text-muted small mb-2"></div>
           <canvas id="chartEstados" height="80"></canvas>
         </div>
       </div>
@@ -132,17 +134,95 @@
 @endif
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
 <script>
   (function(){
-    const data = @json($resumen ?? []);
-    const labels = Object.keys(data);
-    const values = labels.map(k => data[k]);
+    const data = @json($resumenChart ?? ($resumen ?? []));
+    const labels = ['PRESENTE','AUSENTE','RETRASO','JUSTIFICADO'];
+    const values = labels.map(k => data[k] ?? 0);
+    const colorMap = { PRESENTE:'#16a34a', AUSENTE:'#dc2626', RETRASO:'#f59e0b', JUSTIFICADO:'#06b6d4' };
+    const colors = labels.map(k => colorMap[k]);
     const ctx = document.getElementById('chartEstados');
-    if (ctx && labels.length){
+    const total = values.reduce((a,b)=>a+b,0);
+    const summaryEl = document.getElementById('chartSummary');
+    if (summaryEl) { summaryEl.textContent = 'Total filtrado: ' + total; }
+
+    // Promedio sobre categorías con valor > 0
+    const nz = values.filter(v => v > 0);
+    const avg = (nz.length ? (nz.reduce((a,b)=>a+b,0) / nz.length) : 0);
+    const avgLinePlugin = {
+      id: 'avgLinePlugin',
+      afterDatasetsDraw(chart, args, opts){
+        const {ctx, chartArea, scales} = chart;
+        const y = scales.y.getPixelForValue(avg);
+        ctx.save();
+        ctx.beginPath();
+        ctx.setLineDash([5,5]);
+        ctx.strokeStyle = '#64748b';
+        ctx.lineWidth = 1;
+        ctx.moveTo(chartArea.left, y);
+        ctx.lineTo(chartArea.right, y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        // Etiqueta tipo "pill" en esquina superior derecha de la línea
+        const label = 'Promedio: ' + avg.toFixed(2);
+        ctx.font = '12px system-ui, -apple-system, Segoe UI, Roboto, Arial';
+        const padX = 8, padY = 4;
+        const textW = ctx.measureText(label).width;
+        const boxW = textW + padX*2, boxH = 18, radius = 8;
+        let bx = Math.min(chartArea.right - boxW - 6, chartArea.left + 6);
+        let by = Math.max(chartArea.top + 6, Math.min(y - boxH - 4, chartArea.bottom - boxH - 6));
+        // rounded rect
+        ctx.beginPath();
+        ctx.fillStyle = '#e2e8f0';
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 1;
+        const r = radius; const x = bx; const w = boxW; const h = boxH;
+        ctx.moveTo(x+r, by);
+        ctx.arcTo(x+w, by, x+w, by+h, r);
+        ctx.arcTo(x+w, by+h, x, by+h, r);
+        ctx.arcTo(x, by+h, x, by, r);
+        ctx.arcTo(x, by, x+w, by, r);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#334155';
+        ctx.fillText(label, bx+padX, by + boxH - padY - 2);
+        ctx.restore();
+      }
+    };
+    if (ctx){
+      const maxVal = Math.max(...values, 0);
       new Chart(ctx, {
         type: 'bar',
-        data: { labels, datasets: [{ label: 'Registros', data: values, backgroundColor: '#0f766e' }] },
-        options: { responsive: true, plugins:{ legend:{ display:false } } }
+        data: { labels, datasets: [{ label: 'Registros', data: values, backgroundColor: colors }] },
+        options: {
+          responsive: true,
+          layout: { padding: { top: 48, right: 12, left: 8, bottom: 8 } },
+          scales: { y: { beginAtZero: true, grace: '30%', suggestedMax: maxVal ? maxVal + Math.max(0.2, maxVal*0.2) : 1, ticks: { precision: 0 } } },
+          plugins:{
+            legend:{ display:false },
+            datalabels: {
+              display: true,
+              anchor: 'end',
+              align: 'end',
+              offset: 4,
+              clamp: true,
+              clip: false,
+              color: '#0f172a',
+              backgroundColor: (ctx) => 'rgba(255,255,255,0.75)',
+              borderRadius: 4,
+              padding: 2,
+              font: { size: 11, weight: '600' },
+              formatter: (v) => {
+                const t = total || 0;
+                const pct = t ? Math.round((v/t)*100) : 0;
+                return pct + '%';
+              }
+            }
+          }
+        },
+        plugins: [ChartDataLabels, avgLinePlugin]
       });
     }
   })();

@@ -9,6 +9,7 @@
   </div>
   <div class="d-none d-lg-flex gap-2">
     <a href="{{ route('bitacora.export', request()->query()) }}" class="btn btn-outline-secondary"><i class="bi bi-download me-1"></i>CSV</a>
+    <a href="{{ route('bitacora.xlsx', request()->query()) }}" class="btn btn-outline-success"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Excel (XLS)</a>
     <a href="{{ route('bitacora.print', request()->query()) }}" target="_blank" class="btn btn-outline-primary"><i class="bi bi-printer me-1"></i>Imprimir</a>
     <a href="{{ route('bitacora.pdf', request()->query()) }}" class="btn btn-teal"><i class="bi bi-file-earmark-pdf me-1"></i>PDF</a>
   </div>
@@ -52,6 +53,10 @@
           @endforeach
         </select>
       </div>
+      <div class="col-md-2">
+        <label class="form-label">IP Origen</label>
+        <input type="text" name="ip" value="{{ $ip }}" class="form-control" placeholder="e.g. 127.0.0.1">
+      </div>
       <div class="col-md-1 d-grid">
         <button class="btn btn-teal" type="submit">Filtrar</button>
       </div>
@@ -71,26 +76,48 @@
           <th>ID Afectado</th>
           <th>IP</th>
           <th>Descripción</th>
+          <th style="width:110px">Acciones</th>
         </tr>
       </thead>
       <tbody>
-        @forelse($rows as $r)
+        @if(!$rows->count())
+          <tr><td colspan="8" class="text-muted">Sin registros.</td></tr>
+        @else
+          @foreach($rows as $r)
           <tr>
             <td>{{ $r->fecha }}</td>
             <td>{{ $r->usuario ?? '-' }}</td>
-            <td><span class="badge bg-secondary">{{ $r->accion }}</span></td>
+            <td>
+              @php($acc = strtoupper($r->accion ?? ''))
+              @php($cls = 'bg-secondary')
+              @if(str_contains($acc,'LOGIN') || str_contains($acc,'LOGOUT'))
+                @php($cls='bg-primary')
+              @elseif(str_contains($acc,'CREAR') || $acc==='INSERT' || str_contains($acc,'ASIGNAR') || str_contains($acc,'APROBAR'))
+                @php($cls='bg-success')
+              @elseif(str_contains($acc,'EDIT') || $acc==='UPDATE')
+                @php($cls='bg-warning text-dark')
+              @elseif(str_contains($acc,'ELIM') || $acc==='DELETE' || str_contains($acc,'RECHAZAR'))
+                @php($cls='bg-danger')
+              @elseif(str_contains($acc,'IMPORT'))
+                @php($cls='bg-info text-dark')
+              @elseif(str_contains($acc,'RESET'))
+                @php($cls='bg-dark')
+              @endif
+              <span class="badge {{ $cls }}">{{ $r->accion }}</span>
+            </td>
             <td>{{ $r->tabla_afectada }}</td>
             <td>{{ $r->id_afectado }}</td>
             <td>{{ $r->ip_origen }}</td>
             <td>{{ $r->descripcion }}</td>
+            <td class="text-end">
+              <a href="{{ route('bitacora.show', $r->id_bitacora) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
+            </td>
           </tr>
-        @empty
-          <tr><td colspan="7" class="text-muted">Sin registros.</td></tr>
-        @endforelse
+          @endforeach
+        @endif
       </tbody>
     </table>
   </div>
   <div class="card-footer bg-white">{{ $rows->links('vendor.pagination.teal') }}</div>
 </div>
 @endsection
-

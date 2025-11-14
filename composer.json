@@ -9,9 +9,10 @@
   ],
   "license": "MIT",
   "require": {
-    "php": "^8.2",
+    "php": "^8.3",
     "laravel/framework": "^12.0",
     "laravel/tinker": "^2.10.1",
+        "ext-gd": "*",
         "dompdf/dompdf": "^2.0",
         "maatwebsite/excel": "^3.1.63"
   },

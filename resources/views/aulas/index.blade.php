@@ -9,10 +9,13 @@
   </div>
 </div>
 
+@php($canManage = auth()->check() && auth()->user()->roles()->whereIn('nombre',['administrador','admin','coordinador'])->exists())
 <!-- Botón de creación visible solo en pantallas pequeñas -->
+@if($canManage)
 <div class="d-lg-none mb-2">
   <a href="{{ route('aulas.create') }}" class="btn btn-teal w-100"><i class="bi bi-plus-lg me-1"></i>Nueva Aula</a>
 </div>
+@endif
 
 <div class="card shadow-sm border-0 mb-3">
   <div class="card-body">
@@ -81,12 +84,15 @@
             @endif
           </td>
           <td class="text-end">
-            <a href="{{ route('aulas.edit', $a) }}" class="btn btn-sm btn-outline-primary">Editar</a>
-            <form action="{{ route('aulas.destroy', $a) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar esta aula?');">
-              @csrf
-              @method('DELETE')
-              <button class="btn btn-sm btn-outline-danger">Eliminar</button>
-            </form>
+            @if($canManage)
+              <a href="{{ route('aulas.edit', $a) }}" class="btn btn-sm btn-outline-primary">Editar</a>
+              <form action="{{ route('aulas.destroy', $a) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar esta aula?');">
+                @csrf
+                @method('DELETE')
+                <button class="btn btn-sm btn-outline-danger">Eliminar</button>
+              </button>
+              </form>
+            @endif
           </td>
         </tr>
         @endforeach

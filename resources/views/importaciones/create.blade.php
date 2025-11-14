@@ -14,6 +14,16 @@
 
 <div class="card shadow-sm border-0">
   <div class="card-body">
+    @if($errors->any())
+      <div class="alert alert-danger">
+        <div class="fw-semibold">Se encontraron problemas con el archivo:</div>
+        <ul class="mb-0">
+          @foreach($errors->all() as $err)
+            <li style="white-space: pre-line">{{ $err }}</li>
+          @endforeach
+        </ul>
+      </div>
+    @endif
     @if(! $supportsExcel)
       <div class="alert alert-warning">
         Para procesar Excel/CSV se requiere el paquete <code>maatwebsite/excel</code> instalado en el servidor.
@@ -28,12 +38,13 @@
           <option value="docentes" @selected(old('tipo')==='docentes')>Docentes</option>
           <option value="materias" @selected(old('tipo')==='materias')>Materias</option>
           <option value="horarios" @selected(old('tipo')==='horarios')>Horarios</option>
+          <option value="todo" @selected(old('tipo')==='todo')>Importación total (multi-hoja)</option>
         </select>
       </div>
       <div class="col-md-6">
         <label class="form-label">Archivo (Excel .xlsx/.xls o .csv)</label>
         <input type="file" name="archivo" class="form-control" accept=".xlsx,.xls,.csv" required>
-        <small class="text-muted">Peso máximo 10MB. La primera fila debe contener encabezados.</small>
+        <small class="text-muted">Peso máximo 5MB. La primera fila debe contener encabezados.</small>
       </div>
       <div class="col-md-3 d-grid align-items-end">
         <button class="btn btn-teal" type="submit"><i class="bi bi-upload me-1"></i>Importar</button>
@@ -57,6 +68,12 @@
         <a class="btn btn-sm btn-outline-primary me-1" href="{{ route('importaciones.template.xlsx','docentes') }}"><i class="bi bi-file-earmark-excel me-1"></i>Docentes XLSX</a>
         <a class="btn btn-sm btn-outline-primary me-1" href="{{ route('importaciones.template.xlsx','materias') }}"><i class="bi bi-file-earmark-excel me-1"></i>Materias XLSX</a>
         <a class="btn btn-sm btn-outline-primary" href="{{ route('importaciones.template.xlsx','horarios') }}"><i class="bi bi-file-earmark-excel me-1"></i>Horarios XLSX</a>
+      </div>
+      <div class="mt-2">
+        <a class="btn btn-sm btn-teal" href="{{ route('importaciones.template.master.xlsx') }}"><i class="bi bi-collection me-1"></i>Plantilla XLSX (Total)</a>
+      </div>
+      <div class="mt-2">
+        <small class="text-muted">Para "Importación total" puedes usar un único Excel con varias hojas: "docentes", "materias" y "horarios" (encabezados iguales a los listados arriba). El sistema detecta cada hoja por sus columnas.</small>
       </div>
     </div>
   </div>

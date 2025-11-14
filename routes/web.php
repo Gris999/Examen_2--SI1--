@@ -41,17 +41,25 @@ Route::middleware('web')->group(function () {
 
     // CU2: Gestionar Docentes
     Route::middleware(['auth_simple','audit'])->group(function () {
-        Route::resource('docentes', DocenteController::class)->except(['show']);
+        Route::resource('docentes', DocenteController::class)->except(['show'])->middleware('role:administrador,admin,coordinador');
         Route::get('docentes/{docente}/carga', [DocenteController::class, 'showCarga'])->name('docentes.carga');
         Route::post('docentes/{docente}/toggle', [DocenteController::class, 'toggle'])->name('docentes.toggle');
-        Route::resource('materias', MateriaController::class)->except(['show']);
-        Route::resource('grupos', GrupoController::class)->except(['show']);
+        Route::resource('materias', MateriaController::class)->except(['show'])->middleware('role:administrador,admin,coordinador');
+        Route::resource('grupos', GrupoController::class)->except(['show'])->middleware('role:administrador,admin,coordinador');
         Route::get('grupos/{grupo}/docentes', [GrupoController::class, 'docentes'])->name('grupos.docentes');
         Route::post('grupos/{grupo}/docentes', [GrupoController::class, 'addDocente'])->name('grupos.docentes.add');
         Route::delete('grupos/{grupo}/docentes/{dmg}', [GrupoController::class, 'removeDocente'])->name('grupos.docentes.remove');
 
         // CU5: Gestionar Aulas
-        Route::resource('aulas', AulaController::class)->except(['show']);
+        Route::resource('aulas', AulaController::class)->except(['show'])->middleware('role:administrador,admin,coordinador');
+
+        // Decano: rutas de solo lectura (index) para catálogos
+        Route::middleware('role:decano')->group(function(){
+            Route::get('consulta/docentes', [DocenteController::class, 'index'])->name('consulta.docentes');
+            Route::get('consulta/materias', [MateriaController::class, 'index'])->name('consulta.materias');
+            Route::get('consulta/grupos', [GrupoController::class, 'index'])->name('consulta.grupos');
+            Route::get('consulta/aulas', [AulaController::class, 'index'])->name('consulta.aulas');
+        });
         Route::get('aulas/disponibilidad', [AulaController::class, 'disponibilidad'])->name('aulas.disponibilidad');
 
         // CU6: Asignar Carga Horaria (usa tabla 'horarios')
@@ -88,23 +96,40 @@ Route::middleware('web')->group(function () {
         // CU11: Historial de Asistencia
         Route::get('historial', [HistorialAsistenciaController::class, 'index'])->name('historial.index');
         Route::get('historial/export', [HistorialAsistenciaController::class, 'exportCsv'])->name('historial.export');
+        Route::get('historial/xlsx', [HistorialAsistenciaController::class, 'exportXlsx'])->name('historial.xlsx');
         Route::get('historial/print', [HistorialAsistenciaController::class, 'print'])->name('historial.print');
         Route::get('historial/pdf', [HistorialAsistenciaController::class, 'exportPdf'])->name('historial.pdf');
 
-        // CU12: Reportes y Analítica (solo ADMIN/DIRECTOR, validado en el controlador)
-        Route::get('reportes', [ReportesController::class, 'index'])->name('reportes.index');
-        Route::get('reportes/export', [ReportesController::class, 'export'])->name('reportes.export');
-        Route::get('reportes/print', [ReportesController::class, 'print'])->name('reportes.print');
+        // CU12: Reportes y Analítica
+        Route::get('reportes', [ReportesController::class, 'dashboard'])->name('reportes.index');
+        Route::get('reportes/asistencia', [ReportesController::class, 'reporteAsistencia'])->name('reportes.asistencia');
+        Route::get('reportes/asistencia/xls', [ReportesController::class, 'exportarAsistenciaExcel'])->name('reportes.asistencia.xls');
+        Route::get('reportes/asistencia/pdf', [ReportesController::class, 'exportarAsistenciaPDF'])->name('reportes.asistencia.pdf');
+        Route::get('reportes/horarios', [ReportesController::class, 'reporteHorarios'])->name('reportes.horarios');
+        Route::get('reportes/horarios/pdf', [ReportesController::class, 'exportarHorariosPDF'])->name('reportes.horarios.pdf');
+        Route::get('reportes/horarios/xls', [ReportesController::class, 'exportarHorariosExcel'])->name('reportes.horarios.xls');
+        Route::get('reportes/horarios/csv', [ReportesController::class, 'exportarHorariosCsv'])->name('reportes.horarios.csv');
+        Route::get('reportes/aulas', [ReportesController::class, 'reporteAulas'])->name('reportes.aulas');
+        Route::get('reportes/aulas/xls', [ReportesController::class, 'exportarAulasExcel'])->name('reportes.aulas.xls');
+        Route::get('reportes/aulas/csv', [ReportesController::class, 'exportarAulasCsv'])->name('reportes.aulas.csv');
+        Route::get('reportes/aulas/pdf', [ReportesController::class, 'exportarAulasPDF'])->name('reportes.aulas.pdf');
 
         // CU13: Importar Datos Masivos
         Route::get('importaciones', [\App\Http\Controllers\ImportacionController::class, 'index'])->name('importaciones.index');
         Route::get('importaciones/create', [\App\Http\Controllers\ImportacionController::class, 'create'])->name('importaciones.create');
         Route::post('importaciones', [\App\Http\Controllers\ImportacionController::class, 'store'])->name('importaciones.store');
-        Route::get('importaciones/template/{tipo}.xlsx', [\App\Http\Controllers\ImportacionController::class, 'templateXlsx'])->name('importaciones.template.xlsx');
+        // Plantillas: priorizar master antes de la genérica y limitar 'tipo'
+        Route::get('importaciones/template/master.xlsx', [\App\Http\Controllers\ImportacionController::class, 'templateMasterXlsx'])->name('importaciones.template.master.xlsx');
+        Route::get('importaciones/template/{tipo}.xlsx', [\App\Http\Controllers\ImportacionController::class, 'templateXlsx'])->where('tipo','(docentes|materias|horarios)')->name('importaciones.template.xlsx');
 
-        // CU14: Gestionar Usuarios y Roles (solo ADMIN/DIRECTOR)
-        Route::middleware('role:administrador,admin,director,director de carrera')->group(function(){
+        // CU14: Gestionar Usuarios
+        Route::middleware('role:administrador,admin,director,director de carrera,coordinador')->group(function(){
             Route::resource('usuarios', UsuarioController::class)->parameters(['usuarios'=>'usuario'])->except(['show']);
+            Route::post('usuarios/{usuario}/toggle', [UsuarioController::class, 'toggle'])->name('usuarios.toggle');
+            Route::post('usuarios/{usuario}/reset', [UsuarioController::class, 'resetPassword'])->name('usuarios.reset');
+        });
+        // CU14: Gestionar Roles (solo ADMIN)
+        Route::middleware('role:administrador,admin')->group(function(){
             Route::resource('roles', RolController::class)->except(['show']);
         });
 
@@ -112,8 +137,10 @@ Route::middleware('web')->group(function () {
         Route::middleware('role:administrador,admin,decano')->group(function(){
             Route::get('bitacora', [BitacoraController::class, 'index'])->name('bitacora.index');
             Route::get('bitacora/export', [BitacoraController::class, 'exportCsv'])->name('bitacora.export');
+            Route::get('bitacora/xls', [BitacoraController::class, 'exportXlsx'])->name('bitacora.xlsx');
             Route::get('bitacora/pdf', [BitacoraController::class, 'exportPdf'])->name('bitacora.pdf');
             Route::get('bitacora/print', [BitacoraController::class, 'print'])->name('bitacora.print');
+            Route::get('bitacora/{registro}', [BitacoraController::class, 'show'])->name('bitacora.show');
         });
     });
 });

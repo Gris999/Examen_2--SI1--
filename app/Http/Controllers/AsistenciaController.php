@@ -12,6 +12,14 @@ use Illuminate\Database\QueryException;
 
 class AsistenciaController extends Controller
 {
+    public function __construct()
+    {
+        // Accesos por rol
+        // - index/create/store/qr/qrRegister: docente, coordinador, decano, admin
+        // - edit/update/destroy: solo admin o coordinador
+        $this->middleware('role:administrador,admin,coordinador,decano,docente')->only(['index','create','store','qr','qrRegister']);
+        $this->middleware('role:administrador,admin,coordinador')->only(['edit','update','destroy']);
+    }
     public function index(Request $request)
     {
         $desde = $request->date('desde');
@@ -43,8 +51,8 @@ class AsistenciaController extends Controller
 
     public function create(Request $request)
     {
-        $fecha = $request->date('fecha') ?: \\Carbon\\Carbon::now('America/La_Paz')->toDateString();
-        $iso = \\Carbon\\Carbon::parse($fecha, \"America/La_Paz\")->dayOfWeekIso;
+        $fecha = $request->date('fecha') ?: \Carbon\Carbon::now('America/La_Paz')->toDateString();
+        $iso = \Carbon\Carbon::parse($fecha, 'America/La_Paz')->dayOfWeekIso;
         $map = [1=>'Lunes',2=>'Martes',3=>'Miércoles',4=>'Jueves',5=>'Viernes',6=>'Sábado',7=>'Domingo'];
         $dow = $map[$iso] ?? 'Lunes';
 
@@ -76,6 +84,17 @@ class AsistenciaController extends Controller
         $docenteId = $horario->docenteMateriaGestion->id_docente ?? null;
         if (!$docenteId) {
             return back()->withErrors(['id_horario' => 'El horario no tiene docente asignado.'])->withInput();
+        }
+
+        // Si el usuario es DOCENTE, solo puede registrar para sus propios horarios
+        if (auth()->check()) {
+            $roles = auth()->user()->roles()->pluck('nombre')->map(fn($n)=>mb_strtolower($n))->toArray();
+            if (in_array('docente', $roles)) {
+                $me = \App\Models\Docente::where('id_usuario', auth()->user()->id_usuario ?? 0)->first();
+                if (!$me || (int)$me->id_docente !== (int)$docenteId) {
+                    return back()->withErrors(['id_horario' => 'No puede registrar asistencia para un horario que no le pertenece.'])->withInput();
+                }
+            }
         }
 
         $now = \Carbon\Carbon::now('America/La_Paz');
@@ -203,6 +222,7 @@ class AsistenciaController extends Controller
         };
     }
 }
+
 
 
 

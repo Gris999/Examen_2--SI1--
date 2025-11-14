@@ -12,6 +12,9 @@ class UsuarioController extends Controller
     {
         $this->authorizeRoles();
         $q = trim((string)$request->get('q'));
+        $rolId = $request->integer('rol');
+        $estado = $request->get('estado'); // '1'|'0'|null
+
         $users = Usuario::when($q, function($qry) use ($q){
                 $qry->where(function($w) use ($q){
                     $w->where('nombre','ilike',"%$q%")
@@ -19,10 +22,15 @@ class UsuarioController extends Controller
                       ->orWhere('correo','ilike',"%$q%");
                 });
             })
+            ->when($estado !== null && $estado !== '', fn($qry)=>$qry->where('activo', $estado === '1'))
+            ->when($rolId, function($qry) use ($rolId){
+                $ids = DB::table('usuario_rol')->where('id_rol',$rolId)->pluck('id_usuario');
+                $qry->whereIn('id_usuario', $ids);
+            })
             ->orderBy('id_usuario','desc')
             ->paginate(20)->withQueryString();
         $roles = DB::table('roles')->orderBy('nombre')->get();
-        return view('usuarios.index', compact('users','q','roles'));
+        return view('usuarios.index', compact('users','q','roles','rolId','estado'));
     }
 
     public function create()
@@ -56,8 +64,12 @@ class UsuarioController extends Controller
         $u->fecha_creacion = now();
         $u->save();
 
-        // Roles
-        $this->syncRoles($u->id_usuario, $data['roles'] ?? []);
+        // Roles (respetando restricciones por rol actual)
+        $rolesIds = $data['roles'] ?? [];
+        $rolesIds = $this->filterRolesForCurrent($rolesIds);
+        $this->syncRoles($u->id_usuario, $rolesIds);
+
+        $this->logBitacora('CREAR_USUARIO','usuarios', (string)$u->id_usuario, 'Usuario creado');
 
         return redirect()->route('usuarios.index')->with('status','Usuario creado');
     }
@@ -92,17 +104,39 @@ class UsuarioController extends Controller
         $usuario->activo = (bool)($data['activo'] ?? false);
         $usuario->save();
 
-        $this->syncRoles($usuario->id_usuario, $data['roles'] ?? []);
+        $rolesIds = $data['roles'] ?? [];
+        $rolesIds = $this->filterRolesForCurrent($rolesIds);
+        $this->syncRoles($usuario->id_usuario, $rolesIds);
+        $this->logBitacora('EDITAR_USUARIO','usuarios', (string)$usuario->id_usuario, 'Usuario actualizado');
         return redirect()->route('usuarios.index')->with('status','Usuario actualizado');
     }
 
     public function destroy(Usuario $usuario)
     {
         $this->authorizeRoles();
-        DB::table('usuario_rol')->where('id_usuario',$usuario->id_usuario)->delete();
-        $id = $usuario->id_usuario;
-        $usuario->delete();
-        return redirect()->route('usuarios.index')->with('status','Usuario eliminado');
+        $usuario->activo = false;
+        $usuario->save();
+        $this->logBitacora('DESACTIVAR_USUARIO','usuarios', (string)$usuario->id_usuario, 'Usuario desactivado');
+        return redirect()->route('usuarios.index')->with('status','Usuario desactivado');
+    }
+
+    public function toggle(Usuario $usuario)
+    {
+        $this->authorizeRoles();
+        $usuario->activo = ! (bool)$usuario->activo;
+        $usuario->save();
+        $this->logBitacora($usuario->activo ? 'ACTIVAR_USUARIO' : 'DESACTIVAR_USUARIO','usuarios',(string)$usuario->id_usuario, $usuario->activo ? 'Usuario activado' : 'Usuario desactivado');
+        return back()->with('status', $usuario->activo ? 'Usuario activado' : 'Usuario desactivado');
+    }
+
+    public function resetPassword(Usuario $usuario)
+    {
+        $this->authorizeRoles();
+        $temp = 'Tmp'.strtoupper(substr(bin2hex(random_bytes(4)),0,6)).'!';
+        $usuario->contrasena = $temp; // el modelo ya maneja hashing si aplica
+        $usuario->save();
+        $this->logBitacora('RESET_PASSWORD','usuarios', (string)$usuario->id_usuario, 'Restablecimiento de contraseña por admin');
+        return back()->with('status', 'Contraseña temporal: '.$temp);
     }
 
     private function syncRoles(int $userId, array $rolesIds): void
@@ -120,8 +154,25 @@ class UsuarioController extends Controller
     {
         $u = auth()->user();
         $roles = $u?->roles()->pluck('nombre')->map(fn($n)=>mb_strtolower($n))->toArray() ?? [];
-        $ok = in_array('administrador',$roles) || in_array('admin',$roles) || in_array('director',$roles) || in_array('director de carrera',$roles);
+        $ok = in_array('administrador',$roles) || in_array('admin',$roles) || in_array('director',$roles) || in_array('director de carrera',$roles) || in_array('coordinador',$roles);
         abort_unless($ok, 403);
+    }
+
+    private function filterRolesForCurrent(array $rolesIds): array
+    {
+        $u = auth()->user();
+        $my = $u?->roles()->pluck('nombre')->map(fn($n)=>mb_strtolower($n))->toArray() ?? [];
+        // Admin/Director: sin restricciones
+        if (in_array('administrador',$my) || in_array('admin',$my) || in_array('director',$my) || in_array('director de carrera',$my)) {
+            return $rolesIds;
+        }
+        // Coordinador: sólo puede asignar rol DOCENTE
+        if (in_array('coordinador',$my)) {
+            $docRol = \Illuminate\Support\Facades\DB::table('roles')->whereRaw('LOWER(nombre)=LOWER(?)',[ 'docente' ])->value('id_rol');
+            if ($docRol) { return in_array($docRol, $rolesIds) ? [ $docRol ] : [ $docRol ]; }
+            return [];
+        }
+        return [];
     }
 
     private function logBitacora(string $accion, string $tabla, string $id, string $descripcion): void

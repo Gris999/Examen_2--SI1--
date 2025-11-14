@@ -11,6 +11,7 @@
         <p class="text-muted">Escanear para registrar asistencia (expira en 15 minutos).</p>
         <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={{ urlencode($signed) }}" alt="QR">
         <div class="mt-3 small">Fecha: {{ $fecha }} — Día: {{ $horario->dia }} — {{ substr($horario->hora_inicio,0,5) }}-{{ substr($horario->hora_fin,0,5) }}</div>
+        <div class="mt-2"><span class="badge bg-light border text-muted">Zona horaria: {{ config('app.timezone') }} (Hora Bolivia)</span></div>
       </div>
     </div>
   </div>
@@ -28,4 +29,5 @@
   </div>
 </div>
 @endsection
+
 

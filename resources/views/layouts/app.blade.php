@@ -107,7 +107,9 @@
             <div class="accordion-body py-1">
               @if($isAdmin || $isDirector)
                 <a class="nav-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}" href="{{ route('usuarios.index') }}"><i class="bi bi-person-lines-fill me-2"></i>Usuarios</a>
-                <a class="nav-link {{ request()->routeIs('roles.*') ? 'active' : '' }}" href="{{ route('roles.index') }}"><i class="bi bi-shield-lock me-2"></i>Roles</a>
+                @if($isAdmin)
+                  <a class="nav-link {{ request()->routeIs('roles.*') ? 'active' : '' }}" href="{{ route('roles.index') }}"><i class="bi bi-shield-lock me-2"></i>Roles</a>
+                @endif
               @endif
               @if($isAdmin || $isDecano)
                 @if (Route::has('bitacora.index'))
@@ -127,16 +129,32 @@
           <div id="col-acad" class="accordion-collapse collapse" aria-labelledby="acc-acad" data-bs-parent="#menuAccordion">
             <div class="accordion-body py-1">
               @if($isAdmin || $isDecano)
-                <a class="nav-link {{ request()->routeIs('docentes.*') ? 'active' : '' }}" href="{{ route('docentes.index') }}"><i class="bi bi-people me-2"></i>Docentes</a>
+                @if($isAdmin || $isDirector)
+                  <a class="nav-link {{ request()->routeIs('docentes.*') ? 'active' : '' }}" href="{{ route('docentes.index') }}"><i class="bi bi-people me-2"></i>Docentes</a>
+                @elseif($isDecano)
+                  <a class="nav-link {{ request()->routeIs('consulta.docentes') ? 'active' : '' }}" href="{{ route('consulta.docentes') }}"><i class="bi bi-people me-2"></i>Docentes</a>
+                @endif
               @endif
               @if($isAdmin || $isDirector || $isDecano)
-                <a class="nav-link {{ request()->routeIs('materias.*') ? 'active' : '' }}" href="{{ route('materias.index') }}"><i class="bi bi-journal-text me-2"></i>Materias</a>
+                @if($isAdmin || $isDirector)
+                  <a class="nav-link {{ request()->routeIs('materias.*') ? 'active' : '' }}" href="{{ route('materias.index') }}"><i class="bi bi-journal-text me-2"></i>Materias</a>
+                @elseif($isDecano)
+                  <a class="nav-link {{ request()->routeIs('consulta.materias') ? 'active' : '' }}" href="{{ route('consulta.materias') }}"><i class="bi bi-journal-text me-2"></i>Materias</a>
+                @endif
               @endif
               @if($isAdmin || $isDirector)
-                <a class="nav-link {{ request()->routeIs('grupos.*') ? 'active' : '' }}" href="{{ route('grupos.index') }}"><i class="bi bi-collection me-2"></i>Grupos</a>
+                @if($isAdmin || $isDirector)
+                  <a class="nav-link {{ request()->routeIs('grupos.*') ? 'active' : '' }}" href="{{ route('grupos.index') }}"><i class="bi bi-collection me-2"></i>Grupos</a>
+                @elseif($isDecano)
+                  <a class="nav-link {{ request()->routeIs('consulta.grupos') ? 'active' : '' }}" href="{{ route('consulta.grupos') }}"><i class="bi bi-collection me-2"></i>Grupos</a>
+                @endif
               @endif
               @if($isAdmin)
-                <a class="nav-link {{ request()->routeIs('aulas.*') ? 'active' : '' }}" href="{{ route('aulas.index') }}"><i class="bi bi-building me-2"></i>Aulas</a>
+                @if($isAdmin || $isDirector)
+                  <a class="nav-link {{ request()->routeIs('aulas.*') ? 'active' : '' }}" href="{{ route('aulas.index') }}"><i class="bi bi-building me-2"></i>Aulas</a>
+                @elseif($isDecano)
+                  <a class="nav-link {{ request()->routeIs('consulta.aulas') ? 'active' : '' }}" href="{{ route('consulta.aulas') }}"><i class="bi bi-building me-2"></i>Aulas</a>
+                @endif
               @endif
             </div>
           </div>
@@ -228,7 +246,9 @@
             <div class="accordion-body py-1">
               @if($isAdmin || $isDirector)
                 <a class="list-group-item list-group-item-action {{ request()->routeIs('usuarios.*') ? 'active' : '' }}" href="{{ route('usuarios.index') }}">Usuarios</a>
-                <a class="list-group-item list-group-item-action {{ request()->routeIs('roles.*') ? 'active' : '' }}" href="{{ route('roles.index') }}">Roles</a>
+                @if($isAdmin)
+                  <a class="list-group-item list-group-item-action {{ request()->routeIs('roles.*') ? 'active' : '' }}" href="{{ route('roles.index') }}">Roles</a>
+                @endif
               @endif
               @if($isAdmin || $isDecano)
                 @if (Route::has('bitacora.index'))
@@ -243,16 +263,32 @@
           <div id="m-acad" class="accordion-collapse collapse" data-bs-parent="#mobileAccordion">
             <div class="accordion-body py-1">
               @if($isAdmin || $isDecano)
-                <a class="list-group-item list-group-item-action {{ request()->routeIs('docentes.*') ? 'active' : '' }}" href="{{ route('docentes.index') }}">Docentes</a>
+                @if($isAdmin || $isDirector)
+                  <a class="list-group-item list-group-item-action {{ request()->routeIs('docentes.*') ? 'active' : '' }}" href="{{ route('docentes.index') }}">Docentes</a>
+                @elseif($isDecano)
+                  <a class="list-group-item list-group-item-action {{ request()->routeIs('consulta.docentes') ? 'active' : '' }}" href="{{ route('consulta.docentes') }}">Docentes</a>
+                @endif
               @endif
               @if($isAdmin || $isDirector || $isDecano)
-                <a class="list-group-item list-group-item-action {{ request()->routeIs('materias.*') ? 'active' : '' }}" href="{{ route('materias.index') }}">Materias</a>
+                @if($isAdmin || $isDirector)
+                  <a class="list-group-item list-group-item-action {{ request()->routeIs('materias.*') ? 'active' : '' }}" href="{{ route('materias.index') }}">Materias</a>
+                @elseif($isDecano)
+                  <a class="list-group-item list-group-item-action {{ request()->routeIs('consulta.materias') ? 'active' : '' }}" href="{{ route('consulta.materias') }}">Materias</a>
+                @endif
               @endif
               @if($isAdmin || $isDirector)
-                <a class="list-group-item list-group-item-action {{ request()->routeIs('grupos.*') ? 'active' : '' }}" href="{{ route('grupos.index') }}">Grupos</a>
+                @if($isAdmin || $isDirector)
+                  <a class="list-group-item list-group-item-action {{ request()->routeIs('grupos.*') ? 'active' : '' }}" href="{{ route('grupos.index') }}">Grupos</a>
+                @elseif($isDecano)
+                  <a class="list-group-item list-group-item-action {{ request()->routeIs('consulta.grupos') ? 'active' : '' }}" href="{{ route('consulta.grupos') }}">Grupos</a>
+                @endif
               @endif
               @if($isAdmin)
-                <a class="list-group-item list-group-item-action {{ request()->routeIs('aulas.*') ? 'active' : '' }}" href="{{ route('aulas.index') }}">Aulas</a>
+                @if($isAdmin || $isDirector)
+                  <a class="list-group-item list-group-item-action {{ request()->routeIs('aulas.*') ? 'active' : '' }}" href="{{ route('aulas.index') }}">Aulas</a>
+                @elseif($isDecano)
+                  <a class="list-group-item list-group-item-action {{ request()->routeIs('consulta.aulas') ? 'active' : '' }}" href="{{ route('consulta.aulas') }}">Aulas</a>
+                @endif
               @endif
             </div>
           </div>
@@ -330,7 +366,7 @@
           <a href="{{ route('carga.create') }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-lg me-1"></i>Nueva Asignación</a>
         @elseif(str_starts_with($r,'horarios.'))
           <a href="{{ route('horarios.create') }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-lg me-1"></i>Nuevo Horario</a>
-        @elseif(str_starts_with($r,'asistencias.'))
+        @elseif(str_starts_with($r,'asistencias.') && (($isAdmin ?? false) || ($isDirector ?? false) || ($isDocente ?? false)))
           <a href="{{ route('asistencias.create') }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-lg me-1"></i>Registrar Asistencia</a>
         @endif
       </div>

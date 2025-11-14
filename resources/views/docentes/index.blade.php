@@ -9,10 +9,13 @@
   </div>
 </div>
 
+@php($canManage = auth()->check() && auth()->user()->roles()->whereIn('nombre',['administrador','admin','coordinador'])->exists())
 <!-- Botón de creación visible solo en pantallas pequeñas -->
+@if($canManage)
 <div class="d-lg-none mb-2">
   <a href="{{ route('docentes.create') }}" class="btn btn-teal w-100"><i class="bi bi-plus-lg me-1"></i>Nuevo Docente</a>
 </div>
+@endif
 
 <div class="card shadow-sm border-0 mb-3">
   <div class="card-body">
@@ -90,38 +93,44 @@
                 <i class="bi bi-three-dots"></i>
               </button>
               <ul class="dropdown-menu dropdown-menu-end">
-                <li>
-                  <a class="dropdown-item" href="{{ route('docentes.edit', $d) }}">
-                    <i class="bi bi-pencil-square me-2"></i>Editar
-                  </a>
-                </li>
+                @if($canManage)
+                  <li>
+                    <a class="dropdown-item" href="{{ route('docentes.edit', $d) }}">
+                      <i class="bi bi-pencil-square me-2"></i>Editar
+                    </a>
+                  </li>
+                @endif
                 <li>
                   <a class="dropdown-item" href="{{ route('docentes.carga', $d) }}">
                     <i class="bi bi-list-check me-2"></i>Ver carga
                   </a>
                 </li>
-                <li>
-                  <form action="{{ route('docentes.toggle', $d) }}" method="POST">
-                    @csrf
-                    <button class="dropdown-item" type="submit">
-                      @if($activo)
-                        <i class="bi bi-toggle2-off me-2"></i>Desactivar
-                      @else
-                        <i class="bi bi-toggle2-on me-2"></i>Activar
-                      @endif
-                    </button>
-                  </form>
-                </li>
+                @if($canManage)
+                  <li>
+                    <form action="{{ route('docentes.toggle', $d) }}" method="POST">
+                      @csrf
+                      <button class="dropdown-item" type="submit">
+                        @if($activo)
+                          <i class="bi bi-toggle2-off me-2"></i>Desactivar
+                        @else
+                          <i class="bi bi-toggle2-on me-2"></i>Activar
+                        @endif
+                      </button>
+                    </form>
+                  </li>
+                @endif
                 <li><hr class="dropdown-divider"></li>
-                <li>
-                  <form action="{{ route('docentes.destroy', $d) }}" method="POST" onsubmit="return confirm('¿Eliminar este docente?');">
-                    @csrf
-                    @method('DELETE')
-                    <button class="dropdown-item text-danger" type="submit">
-                      <i class="bi bi-trash me-2"></i>Eliminar
-                    </button>
-                  </form>
-                </li>
+                @if($canManage)
+                  <li>
+                    <form action="{{ route('docentes.destroy', $d) }}" method="POST" onsubmit="return confirm('¿Eliminar este docente?');">
+                      @csrf
+                      @method('DELETE')
+                      <button class="dropdown-item text-danger" type="submit">
+                        <i class="bi bi-trash me-2"></i>Eliminar
+                      </button>
+                    </form>
+                  </li>
+                @endif
               </ul>
             </div>
           </td>

@@ -10,23 +10,36 @@
 </head>
 <body>
 <style>
+  :root{
+    --brand-teal:#0f766e;
+    --brand-teal-dark:#0c5f59;
+    --brand-navy:#0b2239;
+    --brand-navy-2:#113252;
+    --page-bg:#f6f9fc;
+    --text-muted:#6c7a89;
+    --radius:14px;
+  }
   .toast-container { z-index: 1080; }
-  html, body { width:100%; max-width:100%; overflow-x:hidden; }
-  .sidebar { width: 260px; min-height: 100vh; position: fixed; top:0; left:0; background: #0b2239; display:flex; flex-direction:column; overflow-y:auto; z-index:1050; }
+  html, body { width:100%; max-width:100%; overflow-x:hidden; background: var(--page-bg); }
+  .sidebar { width: 260px; min-height: 100vh; position: fixed; top:0; left:0; background: var(--brand-navy); display:flex; flex-direction:column; overflow-y:auto; z-index:1050; }
   .sidebar .user { padding: 16px; border-bottom: 1px solid rgba(255,255,255,.08); }
-  .sidebar .user .circle { width:44px;height:44px;border-radius:50%;background:#0f766e;color:#fff;display:flex;align-items:center;justify-content:center; font-weight:600; font-size:18px; }
-  .sidebar a.nav-link { color: #d7e1ea; border-radius: 10px; padding: 11px 12px; font-size: 0.95rem; }
-  .sidebar a.nav-link.active, .sidebar a.nav-link:hover { background:#113252; color:#fff; }
+  .sidebar .user .circle { width:44px;height:44px;border-radius:50%;background:var(--brand-teal);color:#fff;display:flex;align-items:center;justify-content:center; font-weight:600; font-size:18px; }
+  .sidebar a.nav-link { color: #d7e1ea; border-radius: 10px; padding: 11px 12px; font-size: 0.95rem; position:relative; }
+  .sidebar a.nav-link.active, .sidebar a.nav-link:hover { background:var(--brand-navy-2); color:#fff; }
+  .sidebar a.nav-link.active::before{ content:""; position:absolute; left:-8px; top:8px; bottom:8px; width:4px; background:var(--brand-teal); border-radius:4px; }
   .content-wrap { margin-left: 0; position: relative; width:100%; overflow-x:hidden; }
   main.content-wrap { min-height: 100vh; }
   @media(min-width: 992px){ .content-wrap { margin-left: 260px; width: calc(100% - 260px); } }
-  .topbar { position: sticky; top:0; z-index:1060; background:#0f766e; color:#fff; border-bottom:1px solid rgba(255,255,255,.08); padding:.75rem 1rem; }
+  .topbar { position: sticky; top:0; z-index:1060; background:var(--brand-teal); color:#fff; border-bottom:1px solid rgba(255,255,255,.08); padding:.75rem 1rem; }
   .topbar .crumb { color:#eaf8f6; }
   .topbar .form-control, .topbar .form-control:focus { background:rgba(255,255,255,.15); color:#fff; border-color:transparent; }
   .topbar ::placeholder { color:#eef8f6; opacity:.85; }
-  .topbar .btn-outline-primary { --bs-btn-color:#fff; --bs-btn-border-color:#e2f6f3; --bs-btn-hover-bg:#0c5f59; --bs-btn-hover-border-color:#c8efea; }
-  .btn-teal { background:#0f766e; color:#fff; border-color:#0f766e; }
-  .btn-teal:hover { background:#0c5f59; border-color:#0c5f59; color:#fff; }
+  .topbar .btn-outline-primary { --bs-btn-color:#fff; --bs-btn-border-color:#e2f6f3; --bs-btn-hover-bg:var(--brand-teal-dark); --bs-btn-hover-border-color:#c8efea; }
+  .btn-teal { background:var(--brand-teal); color:#fff; border-color:var(--brand-teal); }
+  .btn-teal:hover { background:var(--brand-teal-dark); border-color:var(--brand-teal-dark); color:#fff; }
+  .card { border-radius: var(--radius); box-shadow: 0 8px 20px rgba(2,12,27,.06); border:1px solid #eef2f7; }
+  .form-control, .form-select { border-radius: 10px; }
+  .badge-teal { background: rgba(15,118,110,.12); color: var(--brand-teal); }
 </style>
 
 <div class="toast-container position-fixed top-0 end-0 p-3">

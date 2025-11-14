@@ -84,8 +84,12 @@ class HorarioController extends Controller
         $aulas = Aula::orderBy('nombre')->get();
         $dias = $this->dias;
         $horariosHoy = $soloDocente ? $this->horariosDocenteHoy($docenteActual) : collect();
+        $heading = $soloDocente ? 'Mis Horarios' : 'Horarios';
+        $subheading = $soloDocente
+            ? 'Visualiza únicamente tu carga aprobada. Mantén este módulo como referencia para generar QR y registrar asistencia.'
+            : 'Crea y administra horarios aprobados';
 
-        return view('horarios.index', compact('horarios','docentes','gestiones','materias','grupos','aulas','dias','docenteId','gestionId','materiaId','grupoId','aulaId','dia','aproCount','toProcess','soloDocente','horariosHoy'));
+        return view('horarios.index', compact('horarios','docentes','gestiones','materias','grupos','aulas','dias','docenteId','gestionId','materiaId','grupoId','aulaId','dia','aproCount','toProcess','soloDocente','horariosHoy','heading','subheading'));
     }
 
     public function create()

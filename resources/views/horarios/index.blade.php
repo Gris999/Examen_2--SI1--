@@ -3,10 +3,10 @@
 
 @section('content')
 @php
-  $heading = isset($soloDocente) && $soloDocente ? 'Mis Horarios' : 'Horarios';
-  $subheading = isset($soloDocente) && $soloDocente
+  $heading = $heading ?? (isset($soloDocente) && $soloDocente ? 'Mis Horarios' : 'Horarios');
+  $subheading = $subheading ?? (isset($soloDocente) && $soloDocente
     ? 'Visualiza únicamente tu carga aprobada. Mantén este módulo como referencia para generar QR y registrar asistencia.'
-    : 'Crea y administra horarios aprobados';
+    : 'Crea y administra horarios aprobados');
 @endphp
 <div class="d-flex justify-content-between align-items-center mb-3">
   <div>

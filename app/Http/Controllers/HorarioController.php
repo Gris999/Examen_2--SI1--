@@ -32,6 +32,11 @@ class HorarioController extends Controller
         $dia = $request->get('dia');
 
         $query = Horario::with(['grupo.materia','grupo.gestion','docenteMateriaGestion.docente.usuario','aula']);
+        $docenteActual = $this->docenteActual();
+        $soloDocente = $docenteActual !== null;
+        if ($soloDocente) {
+            $docenteId = $docenteActual->id_docente;
+        }
 
         if ($docenteId) {
             $dmgIds = DMG::where('id_docente', $docenteId)->pluck('id_docente_materia_gestion');
@@ -78,8 +83,9 @@ class HorarioController extends Controller
         $grupos = Grupo::orderBy('id_grupo','desc')->get();
         $aulas = Aula::orderBy('nombre')->get();
         $dias = $this->dias;
+        $horariosHoy = $soloDocente ? $this->horariosDocenteHoy($docenteActual) : collect();
 
-        return view('horarios.index', compact('horarios','docentes','gestiones','materias','grupos','aulas','dias','docenteId','gestionId','materiaId','grupoId','aulaId','dia','aproCount','toProcess'));
+        return view('horarios.index', compact('horarios','docentes','gestiones','materias','grupos','aulas','dias','docenteId','gestionId','materiaId','grupoId','aulaId','dia','aproCount','toProcess','soloDocente','horariosHoy'));
     }
 
     public function create()
@@ -89,7 +95,9 @@ class HorarioController extends Controller
         $aulas = Aula::orderBy('nombre')->get();
         $dias = $this->dias;
         $modalidades = $this->modalidades;
-        return view('horarios.create', compact('docentes','grupos','aulas','dias','modalidades'));
+        $docente = $this->docenteActual();
+        $horariosHoy = $this->horariosDocenteHoy($docente);
+        return view('horarios.create', compact('docentes','grupos','aulas','dias','modalidades','docente','horariosHoy'));
     }
 
     public function store(Request $request)
@@ -249,6 +257,27 @@ class HorarioController extends Controller
             'ocupadas' => $aulas->whereIn('id_aula', $ocupadas)->values(),
             'disponibles' => $disponibles,
         ]);
+    }
+
+    private function docenteActual(): ?Docente
+    {
+        $user = auth()->user();
+        if (!$user) { return null; }
+        if (!$user->roles()->where('nombre','docente')->exists()) { return null; }
+        return Docente::where('id_usuario', $user->id_usuario ?? 0)->first();
+    }
+
+    private function horariosDocenteHoy(?Docente $docente)
+    {
+        if (!$docente) { return collect(); }
+        $ids = DMG::where('id_docente', $docente->id_docente)->pluck('id_docente_materia_gestion');
+        if ($ids->isEmpty()) { return collect(); }
+        $dow = $this->dowName(\Carbon\Carbon::now('America/La_Paz')->dayOfWeekIso);
+        return Horario::with(['grupo.materia','grupo.gestion','docenteMateriaGestion.docente.usuario','aula'])
+            ->where('dia', $dow)
+            ->whereIn('id_docente_materia_gestion', $ids)
+            ->orderBy('hora_inicio','asc')
+            ->get();
     }
 
     // CU8: generación automática simple de horarios sin solape

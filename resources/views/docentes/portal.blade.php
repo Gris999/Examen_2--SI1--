@@ -89,7 +89,11 @@
               <small class="text-muted">{{ $presencia }}% de asistencia</small>
             </div>
             <div class="mt-4">
-              <a href="{{ route('asistencias.qr') }}" class="btn btn-outline-success btn-sm me-2">QR de hoy</a>
+              @if($primerHorarioHoy)
+                <a href="{{ route('asistencias.qr', $primerHorarioHoy) }}" class="btn btn-outline-success btn-sm me-2">QR de hoy</a>
+              @else
+                <button class="btn btn-outline-success btn-sm me-2" disabled>QR de hoy</button>
+              @endif
               <a href="{{ route('asistencias.create') }}" class="btn btn-teal btn-sm">Registrar manual</a>
             </div>
           </div>

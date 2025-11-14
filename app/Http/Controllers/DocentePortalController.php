@@ -44,9 +44,10 @@ class DocentePortalController extends Controller
 
         $hoy = \Carbon\Carbon::now('America/La_Paz')->format('Y-m-d');
         $horariosHoy = $horarios->where('dia', $this->dowName(\Carbon\Carbon::now('America/La_Paz')->dayOfWeekIso));
+        $primerHorarioHoy = $horariosHoy->first();
 
         return view('docentes.portal', compact(
-            'docente','horarios','asistencias','total','presentes','retrasos','ausentes','justificadas','presencia','horariosHoy','hoy'
+            'docente','horarios','asistencias','total','presentes','retrasos','ausentes','justificadas','presencia','horariosHoy','hoy','primerHorarioHoy'
         ));
     }
 

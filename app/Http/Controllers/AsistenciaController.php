@@ -6,6 +6,7 @@ use App\Models\Asistencia;
 use App\Models\Docente;
 use App\Models\Horario;
 use App\Models\Grupo;
+use App\Models\DocenteMateriaGestion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Database\QueryException;
@@ -35,18 +36,15 @@ class AsistenciaController extends Controller
             ->orderBy('fecha', 'desc')
             ->orderBy('hora_entrada', 'desc');
 
-        // Si es Docente, ver solo sus propias asistencias
-        if (auth()->check()) {
-            $roles = auth()->user()->roles()->pluck('nombre')->map(fn($n)=>mb_strtolower($n))->toArray();
-            if (in_array('docente', $roles)) {
-                $me = \App\Models\Docente::where('id_usuario', auth()->user()->id_usuario ?? 0)->first();
-                if ($me) { $q->where('id_docente', $me->id_docente); }
-            }
+        $docente = $this->docenteActual();
+        if ($docente) {
+            $q->where('id_docente', $docente->id_docente);
         }
 
         $asistencias = $q->paginate(12)->withQueryString();
         $docentes = Docente::with('usuario')->orderBy('id_docente','desc')->get();
-        return view('asistencias.index', compact('asistencias','docentes','desde','hasta','docenteId','estado'));
+        $horariosHoy = $this->horariosDocenteParaHoy($docente);
+        return view('asistencias.index', compact('asistencias','docentes','desde','hasta','docenteId','estado','horariosHoy'));
     }
 
     public function create(Request $request)
@@ -55,13 +53,13 @@ class AsistenciaController extends Controller
         $iso = \Carbon\Carbon::parse($fecha, 'America/La_Paz')->dayOfWeekIso;
         $map = [1=>'Lunes',2=>'Martes',3=>'Miércoles',4=>'Jueves',5=>'Viernes',6=>'Sábado',7=>'Domingo'];
         $dow = $map[$iso] ?? 'Lunes';
+        $docente = $this->docenteActual();
 
         $horarios = Horario::with(['grupo.materia','grupo.gestion','docenteMateriaGestion.docente.usuario','aula'])
             ->where('dia', $dow)
-            ->when(auth()->check() && in_array('docente', auth()->user()->roles()->pluck('nombre')->map(fn($n)=>mb_strtolower($n))->toArray()), function($q){
-                $me = \App\Models\Docente::where('id_usuario', auth()->user()->id_usuario ?? 0)->first();
-                if ($me) {
-                    $ids = \App\Models\DocenteMateriaGestion::where('id_docente', $me->id_docente)->pluck('id_docente_materia_gestion');
+            ->when($docente ?? false, function($q) use ($docente) {
+                $ids = DocenteMateriaGestion::where('id_docente', $docente->id_docente)->pluck('id_docente_materia_gestion');
+                if ($ids->isNotEmpty()) {
                     $q->whereIn('id_docente_materia_gestion', $ids);
                 }
             })
@@ -87,13 +85,9 @@ class AsistenciaController extends Controller
         }
 
         // Si el usuario es DOCENTE, solo puede registrar para sus propios horarios
-        if (auth()->check()) {
-            $roles = auth()->user()->roles()->pluck('nombre')->map(fn($n)=>mb_strtolower($n))->toArray();
-            if (in_array('docente', $roles)) {
-                $me = \App\Models\Docente::where('id_usuario', auth()->user()->id_usuario ?? 0)->first();
-                if (!$me || (int)$me->id_docente !== (int)$docenteId) {
-                    return back()->withErrors(['id_horario' => 'No puede registrar asistencia para un horario que no le pertenece.'])->withInput();
-                }
+        if ($docente = $this->docenteActual()) {
+            if ((int)$docente->id_docente !== (int)$docenteId) {
+                return back()->withErrors(['id_horario' => 'No puede registrar asistencia para un horario que no le pertenece.'])->withInput();
             }
         }
 
@@ -206,6 +200,31 @@ class AsistenciaController extends Controller
         }
 
         return redirect()->route('asistencias.index')->with('status','Asistencia por QR registrada.');
+    }
+
+    private function docenteActual(): ?Docente
+    {
+        $user = auth()->user();
+        if (!$user) { return null; }
+        $roles = $user->roles()->pluck('nombre')->map(fn($n)=>mb_strtolower($n))->toArray();
+        if (!in_array('docente', $roles, true)) {
+            return null;
+        }
+        return Docente::where('id_usuario', $user->id_usuario ?? 0)->first();
+    }
+
+    private function horariosDocenteParaHoy(?Docente $docente)
+    {
+        if (!$docente) { return collect(); }
+        $dow = $this->dowName(\Carbon\Carbon::now('America/La_Paz')->dayOfWeekIso);
+        $ids = DocenteMateriaGestion::where('id_docente', $docente->id_docente)->pluck('id_docente_materia_gestion');
+        if ($ids->isEmpty()) { return collect(); }
+
+        return Horario::with(['grupo.materia','grupo.gestion','docenteMateriaGestion.docente.usuario','aula'])
+            ->where('dia', $dow)
+            ->whereIn('id_docente_materia_gestion', $ids)
+            ->orderBy('hora_inicio','asc')
+            ->get();
     }
 
     private function dowName(int $iso): string

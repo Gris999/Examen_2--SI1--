@@ -52,8 +52,41 @@
         <button class="btn btn-teal" type="submit">Filtrar</button>
       </div>
     </form>
-  </div>
 </div>
+</div>
+
+@if(isset($horariosHoy) && $horariosHoy->isNotEmpty() && auth()->check() && auth()->user()->roles()->where('nombre','docente')->exists())
+  <div class="card shadow-sm border-0 mb-3">
+    <div class="card-body">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-2 mb-3">
+        <div>
+          <h6 class="mb-1 fw-semibold">Horarios del día</h6>
+          <p class="text-muted small mb-0">Genera un QR para registrar tu asistencia mediante el horario correspondiente.</p>
+        </div>
+        <span class="badge bg-primary-subtle text-primary px-3 py-2">
+          {{$horariosHoy->count()}} horario{{ $horariosHoy->count() === 1 ? '' : 's' }} disponibles
+        </span>
+      </div>
+      <div class="row g-3">
+        @foreach($horariosHoy as $horario)
+          <div class="col-md-4">
+            <div class="border rounded-3 p-3 h-100 d-flex flex-column justify-content-between">
+              <div>
+                <div class="fw-semibold text-uppercase">{{ $horario->grupo->materia->nombre ?? '' }}</div>
+                <div class="text-muted small mb-2">Grupo {{ $horario->grupo->nombre_grupo ?? '-' }} / {{ $horario->grupo->gestion->codigo ?? '' }}</div>
+                <div class="small text-muted">
+                  {{ $horario->dia }} • {{ substr($horario->hora_inicio,0,5) }} - {{ substr($horario->hora_fin,0,5) }}
+                </div>
+                <div class="small text-muted">Aula {{ $horario->aula->nombre ?? '—' }}</div>
+              </div>
+              <a href="{{ route('asistencias.qr', $horario) }}" class="btn btn-outline-success btn-sm mt-3 align-self-start">Generar QR</a>
+            </div>
+          </div>
+        @endforeach
+      </div>
+    </div>
+  </div>
+@endif
 
 <div class="table-responsive">
   <table class="table align-middle">

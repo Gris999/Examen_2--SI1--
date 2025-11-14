@@ -36,7 +36,13 @@ Route::middleware('web')->group(function () {
     Route::post('/password/reset', [PasswordResetController::class, 'reset'])->name('password.update');
 
     // Dashboard protegido
-    Route::redirect('/', '/dashboard');
+    // Home: si no está autenticado, mostrar selector de perfil; si está autenticado, ir al dashboard
+    Route::get('/', function(){
+        return auth()->check()
+            ? redirect()->route('dashboard')
+            : redirect()->route('login.select');
+    })->name('home');
+
     Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth_simple','audit'])->name('dashboard');
 
     // CU2: Gestionar Docentes

@@ -1,5 +1,6 @@
-@php($title = 'Horarios')
 @extends('layouts.app')
+
+@php($title = 'Horarios')
 
 @section('content')
 @php

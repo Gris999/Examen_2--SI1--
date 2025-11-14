@@ -92,8 +92,18 @@
       $isDecano = in_array('decano', $roles);
       $isDirector = in_array('director de carrera', $roles) || in_array('director', $roles) || in_array('coordinador', $roles);
       $isDocente = in_array('docente', $roles);
+      $docenteId = auth()->user()->docente->id_docente ?? null;
     @endphp
-            <nav class="p-2">
+    @if($isDocente)
+      <nav class="p-2">
+        <a class="nav-link {{ request()->routeIs('docente.portal') ? 'active' : '' }}" href="{{ route('docente.portal') }}"><i class="bi bi-house me-2"></i>Portal Docente</a>
+        <a class="nav-link {{ request()->routeIs('horarios.index') ? 'active' : '' }}" href="{{ route('horarios.index') }}"><i class="bi bi-calendar-week me-2"></i>Horario semanal</a>
+        <a class="nav-link {{ request()->routeIs('asistencias.create') ? 'active' : '' }}" href="{{ route('asistencias.create') }}"><i class="bi bi-clipboard-check me-2"></i>Registro de asistencia</a>
+        <a class="nav-link {{ request()->routeIs('historial.*') ? 'active' : '' }}" href="{{ route('historial.index') }}"><i class="bi bi-collection me-2"></i>Historial de asistencia</a>
+        <a class="nav-link {{ request()->routeIs('docentes.carga') ? 'active' : '' }}" href="{{ route('docentes.carga', $docenteId) }}"><i class="bi bi-person-workspace me-2"></i>Carga horaria</a>
+      </nav>
+    @else
+    <nav class="p-2">
       <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}"><i class="bi bi-house me-2"></i>Inicio</a>
 
       <div class="accordion mt-2" id="menuAccordion">
@@ -223,6 +233,7 @@
         </div>
       </div>
     </nav>
+    @endif
   </aside>
 
   <!-- Offcanvas mobile menu -->
@@ -430,5 +441,3 @@
 </script>
 </body>
 </html>
-
-

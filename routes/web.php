@@ -18,6 +18,7 @@ use App\Http\Controllers\ReportesController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\BitacoraController;
+use App\Http\Controllers\DocentePortalController;
 use Illuminate\Support\Facades\App;
 
 // Autenticación
@@ -61,13 +62,14 @@ Route::middleware('web')->group(function () {
 
         // Decano: rutas de solo lectura (index) para catálogos
         Route::middleware('role:decano')->group(function(){
-        Route::get('consulta/docentes', [DocenteController::class, 'index'])->name('consulta.docentes');
-        Route::middleware('role:docente')->group(function () {
-            Route::get('docente/portal', [App\Http\Controllers\DocentePortalController::class, 'index'])->name('docente.portal');
-        });
+            Route::get('consulta/docentes', [DocenteController::class, 'index'])->name('consulta.docentes');
             Route::get('consulta/materias', [MateriaController::class, 'index'])->name('consulta.materias');
             Route::get('consulta/grupos', [GrupoController::class, 'index'])->name('consulta.grupos');
             Route::get('consulta/aulas', [AulaController::class, 'index'])->name('consulta.aulas');
+        });
+
+        Route::middleware('role:docente')->group(function () {
+            Route::get('docente/portal', [App\Http\Controllers\DocentePortalController::class, 'index'])->name('docente.portal');
         });
         Route::get('aulas/disponibilidad', [AulaController::class, 'disponibilidad'])->name('aulas.disponibilidad');
 

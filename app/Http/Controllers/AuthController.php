@@ -146,7 +146,7 @@ class AuthController extends Controller
             return redirect()->intended(route('dashboard'));
         }
         if (in_array('docente', $roles, true)) {
-            return redirect()->intended(route('horarios.index'));
+            return redirect()->intended(route('docente.portal'));
         }
         if (in_array('decano', $roles, true)) {
             return redirect()->intended(route('aprobaciones.index'));

@@ -66,7 +66,8 @@ class AsistenciaController extends Controller
             ->orderBy('id_horario','desc')
             ->get();
 
-        return view('asistencias.create', compact('horarios','fecha'));
+        $horariosHoy = $this->horariosDocenteParaHoy($docente);
+        return view('asistencias.create', compact('horarios','fecha','horariosHoy'));
     }
 
     public function store(Request $request)

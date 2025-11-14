@@ -97,10 +97,8 @@
     @if($isDocente)
       <nav class="p-2">
         <a class="nav-link {{ request()->routeIs('docente.portal') ? 'active' : '' }}" href="{{ route('docente.portal') }}"><i class="bi bi-house me-2"></i>Portal Docente</a>
-        <a class="nav-link {{ request()->routeIs('horarios.index') ? 'active' : '' }}" href="{{ route('horarios.index') }}"><i class="bi bi-calendar-week me-2"></i>Horario semanal</a>
         <a class="nav-link {{ request()->routeIs('asistencias.create') ? 'active' : '' }}" href="{{ route('asistencias.create') }}"><i class="bi bi-clipboard-check me-2"></i>Registro de asistencia</a>
         <a class="nav-link {{ request()->routeIs('historial.*') ? 'active' : '' }}" href="{{ route('historial.index') }}"><i class="bi bi-collection me-2"></i>Historial de asistencia</a>
-        <a class="nav-link {{ request()->routeIs('docentes.carga') ? 'active' : '' }}" href="{{ route('docentes.carga', $docenteId) }}"><i class="bi bi-person-workspace me-2"></i>Carga horaria</a>
       </nav>
     @else
     <nav class="p-2">

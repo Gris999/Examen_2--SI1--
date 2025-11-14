@@ -9,10 +9,8 @@
         <h5 class="fw-semibold">Bienvenido, {{ $docente->usuario->nombre ?? '' }}</h5>
         <p class="text-muted small">Gestión académica para tu carga</p>
         <div class="list-group list-group-flush">
-          <a href="#horario" class="list-group-item list-group-item-action">Horario semanal</a>
           <a href="#registro" class="list-group-item list-group-item-action">Registro de asistencia</a>
           <a href="#historial" class="list-group-item list-group-item-action">Historial</a>
-          <a href="{{ route('docentes.carga', $docente) }}" class="list-group-item list-group-item-action">Carga horaria</a>
         </div>
         <div class="mt-4">
           <a href="{{ route('asistencias.create') }}" class="btn btn-sm btn-teal w-100 mb-2">Registrar asistencia</a>

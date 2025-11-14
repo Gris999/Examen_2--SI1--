@@ -61,16 +61,6 @@
     <div class="col-lg-8">
       <div class="row g-3">
         <div class="col-md-6">
-          <a href="{{ route('carga.index') }}" class="text-decoration-none">
-            <div class="card shadow-sm border-0 h-100">
-              <div class="card-body">
-                <div class="fw-semibold mb-1">Carga Horaria</div>
-                <small class="text-muted">Asignación y consulta</small>
-              </div>
-            </div>
-          </a>
-        </div>
-        <div class="col-md-6">
           <a href="{{ route('aprobaciones.index') }}" class="text-decoration-none">
             <div class="card shadow-sm border-0 h-100">
               <div class="card-body">

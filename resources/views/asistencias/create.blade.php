@@ -2,10 +2,15 @@
 @extends('layouts.app')
 
 @section('content')
+@php($mode = request()->get('modo','manual'))
 <div class="d-flex justify-content-between align-items-center mb-3">
   <div>
-    <h4 class="mb-0">Registrar Asistencia (Manual)</h4>
-    <small class="text-muted">Seleccione fecha y horario para registrar</small>
+    <h4 class="mb-0">Registrar Asistencia</h4>
+    <small class="text-muted">Elija la forma de registrar: manual o por QR</small>
+  </div>
+  <div class="btn-group" role="group" aria-label="Modo de asistencia">
+    <button type="button" class="btn btn-outline-secondary" data-att-mode="manual">Manual</button>
+    <button type="button" class="btn btn-outline-secondary" data-att-mode="qr">QR</button>
   </div>
 </div>
 
@@ -16,7 +21,8 @@
   </div>
 </form>
 
-<form method="POST" action="{{ route('asistencias.store') }}" class="row g-3">
+<div data-mode-section="manual">
+  <form method="POST" action="{{ route('asistencias.store') }}" class="row g-3">
   @csrf
   <input type="hidden" name="fecha" value="{{ $fecha }}">
   <div class="col-md-12">
@@ -44,46 +50,76 @@
     <label class="form-label">Justificación (opcional)</label>
     <input type="text" name="justificacion" class="form-control" placeholder="Motivo o comentario...">
   </div>
-  <div class="col-12 d-flex gap-2">
-    <button class="btn btn-teal" type="submit">Guardar</button>
-    <a href="{{ route('asistencias.index') }}" class="btn btn-outline-secondary">Cancelar</a>
-  </div>
-</form>
+    <div class="col-12 d-flex gap-2">
+      <button class="btn btn-teal" type="submit">Guardar</button>
+      <a href="{{ route('asistencias.index') }}" class="btn btn-outline-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
 
-@if(isset($horariosHoy) && $horariosHoy->isNotEmpty())
+<div data-mode-section="qr" class="d-none">
   <div class="card shadow-sm border-0 mt-4">
     <div class="card-body">
       <div class="d-flex justify-content-between align-items-center mb-2">
         <div>
-          <h6 class="mb-0">Horarios para generar QR</h6>
-          <small class="text-muted">Escoge el horario del día y pulsa QR para registrar asistencia con tu móvil.</small>
+          <h6 class="mb-0">Registro por QR</h6>
+          <small class="text-muted">Selecciona uno de tus horarios del día y genera el QR.</small>
         </div>
         <span class="badge bg-success-subtle text-success px-3 py-2">
           {{ $horariosHoy->count() }} horario{{ $horariosHoy->count() === 1 ? '' : 's' }} activos hoy
         </span>
       </div>
-      <div class="row g-3">
-        @foreach($horariosHoy as $horario)
-          <div class="col-md-6">
-            <div class="border rounded-3 p-3 h-100 d-flex justify-content-between align-items-start gap-3">
-              <div>
-                <div class="fw-semibold">{{ $horario->grupo->materia->nombre ?? '' }} — {{ $horario->grupo->nombre_grupo ?? '' }}</div>
-                <div class="text-muted small">
-                  {{ $horario->dia }} {{ substr($horario->hora_inicio,0,5) }} - {{ substr($horario->hora_fin,0,5) }}
+      @if($horariosHoy->isNotEmpty())
+        <div class="row g-3">
+          @foreach($horariosHoy as $horario)
+            <div class="col-md-6">
+              <div class="border rounded-3 p-3 h-100 d-flex justify-content-between align-items-start gap-3">
+                <div>
+                  <div class="fw-semibold">{{ $horario->grupo->materia->nombre ?? '' }} - {{ $horario->grupo->nombre_grupo ?? '' }}</div>
+                  <div class="text-muted small">
+                    {{ $horario->dia }} {{ substr($horario->hora_inicio,0,5) }} - {{ substr($horario->hora_fin,0,5) }}
+                  </div>
                 </div>
+                <a href="{{ route('asistencias.qr', $horario) }}" class="btn btn-outline-success btn-sm">QR</a>
               </div>
-              <a href="{{ route('asistencias.qr', $horario) }}" class="btn btn-outline-success btn-sm">QR</a>
             </div>
-          </div>
-        @endforeach
-      </div>
+          @endforeach
+        </div>
+      @else
+        <div class="alert alert-info mb-0">
+          No tienes horarios activos hoy. Usa el módulo de Horarios para generar tus sesiones aprobadas.
+        </div>
+      @endif
     </div>
   </div>
-@endif
+</div>
 
 <hr>
 <div class="text-muted">
   <strong>Registrar por QR</strong>
-  <p class="mb-0">Para generar un QR, diríjase a "Horarios" y entre al QR de un horario específico.</p>
-  </div>
+  <p class="mb-0">Alterna entre el modo manual y el modo QR usando los botones superiores.</p>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const sections = document.querySelectorAll('[data-mode-section]');
+    const buttons = document.querySelectorAll('[data-att-mode]');
+    function setMode(mode) {
+      sections.forEach(section => section.classList.toggle('d-none', section.dataset.modeSection !== mode));
+      buttons.forEach(button => {
+        if (button.dataset.attMode === mode) {
+          button.classList.remove('btn-outline-secondary');
+          button.classList.add('btn-secondary');
+        } else {
+          button.classList.remove('btn-secondary');
+          button.classList.add('btn-outline-secondary');
+        }
+      });
+    }
+    buttons.forEach(button => {
+      button.addEventListener('click', () => setMode(button.dataset.attMode));
+    });
+    setMode("{{ $mode === 'qr' ? 'qr' : 'manual' }}");
+  });
+  </script>
 @endsection

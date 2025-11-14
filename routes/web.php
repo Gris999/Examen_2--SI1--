@@ -69,7 +69,7 @@ Route::middleware('web')->group(function () {
         });
 
         Route::middleware('role:docente')->group(function () {
-            Route::get('docente/portal', [App\Http\Controllers\DocentePortalController::class, 'index'])->name('docente.portal');
+            Route::get('docente/portal', [DocentePortalController::class, 'index'])->name('docente.portal');
         });
         Route::get('aulas/disponibilidad', [AulaController::class, 'disponibilidad'])->name('aulas.disponibilidad');
 

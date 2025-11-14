@@ -20,8 +20,11 @@
   .content-wrap { margin-left: 0; position: relative; width:100%; overflow-x:hidden; }
   main.content-wrap { min-height: 100vh; }
   @media(min-width: 992px){ .content-wrap { margin-left: 260px; width: calc(100% - 260px); } }
-  .topbar { position: sticky; top:0; z-index:1060; background:#fff; border-bottom:1px solid #edf2f7; padding:.75rem 1rem; }
-  .crumb { color:#6c757d; }
+  .topbar { position: sticky; top:0; z-index:1060; background:#0f766e; color:#fff; border-bottom:1px solid rgba(255,255,255,.08); padding:.75rem 1rem; }
+  .topbar .crumb { color:#eaf8f6; }
+  .topbar .form-control, .topbar .form-control:focus { background:rgba(255,255,255,.15); color:#fff; border-color:transparent; }
+  .topbar ::placeholder { color:#eef8f6; opacity:.85; }
+  .topbar .btn-outline-primary { --bs-btn-color:#fff; --bs-btn-border-color:#e2f6f3; --bs-btn-hover-bg:#0c5f59; --bs-btn-hover-border-color:#c8efea; }
   .btn-teal { background:#0f766e; color:#fff; border-color:#0f766e; }
   .btn-teal:hover { background:#0c5f59; border-color:#0c5f59; color:#fff; }
 </style>
@@ -348,11 +351,17 @@
 
 @auth
   <div class="topbar d-none d-lg-block content-wrap">
-    <div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex justify-content-between align-items-center gap-3">
       <div class="crumb">
         <i class="bi bi-chevron-right"></i> {{ $title ?? (ucfirst(str_replace('.', ' ', request()->route()->getName())) ) }}
       </div>
-      <div class="d-flex gap-2">
+      <form method="GET" action="{{ url()->current() }}" class="d-none d-md-flex align-items-center flex-grow-1" style="max-width:520px;">
+        <div class="input-group input-group-sm ms-auto">
+          <span class="input-group-text bg-transparent border-0 text-white-50"><i class="bi bi-search"></i></span>
+          <input type="search" name="q" class="form-control border-0" placeholder="Buscar...">
+        </div>
+      </form>
+      <div class="d-flex gap-2 ms-2">
         @php $r = request()->route()->getName(); @endphp
         @if(str_starts_with($r,'docentes.') && ($isAdmin ?? false))
           <a href="{{ route('docentes.create') }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-lg me-1"></i>Nuevo Docente</a>

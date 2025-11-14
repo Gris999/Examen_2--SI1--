@@ -20,13 +20,20 @@
 </head>
 <body>
   <div class="container py-4">
-    <div class="brand-icon">
-      <span>🎓</span>
-    </div>
-    <div class="text-center mb-3">
-      <h5 class="mb-0">Sistema Académico</h5>
-      <small class="text-muted">Gestión Educativa Integral</small>
-    </div>
+    <div class="row align-items-center min-vh-100">
+      <div class="col-lg-6 d-none d-lg-block">
+        <div class="px-4">
+          <img src="https://cdn.jsdelivr.net/gh/edent/SuperTinyIcons/images/svg/school.svg" alt="Ilustración" class="img-fluid" style="max-height: 360px;">
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="brand-icon">
+          <span>🎓</span>
+        </div>
+        <div class="text-center mb-3">
+          <h5 class="mb-0">Sistema Académico</h5>
+          <small class="text-muted">Gestión Educativa Integral</small>
+        </div>
     {{-- Toasts (status/warning/errors) --}}
     <div class="toast-container position-fixed top-0 end-0 p-3">
       @if (session('status'))
@@ -62,8 +69,10 @@
       @endif
     </div>
 
-    {{ $slot ?? '' }}
-    @yield('content')
+        {{ $slot ?? '' }}
+        @yield('content')
+      </div>
+    </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>

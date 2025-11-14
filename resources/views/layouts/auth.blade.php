@@ -6,36 +6,27 @@
   <title>{{ $title ?? 'Sistema Académico' }}</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    :root{ --brand-teal:#0f766e; --brand-teal-dark:#0c5f59; --radius:16px; }
     body { background: linear-gradient(180deg,#e9fbf7,#f6fffd); min-height:100vh; }
-    .brand-icon { width:74px;height:74px;border-radius:16px;background:var(--brand-teal);display:flex;align-items:center;justify-content:center;color:#fff;font-size:36px; margin: 40px auto 12px; }
-    .card-auth { max-width: 480px; margin: 0 auto; border:0; box-shadow: 0 8px 24px rgba(2,12,27,.08); border-radius:var(--radius); }
-    .btn-teal { background:var(--brand-teal); color:#fff; border-radius:12px; }
-    .btn-teal:hover { background:var(--brand-teal-dark); color:#fff; }
-    .btn-select { background:var(--brand-teal); color:#fff; border-radius:14px; padding:.9rem 1rem; text-align:left; }
-    .btn-select:hover { background:var(--brand-teal-dark); color:#fff; }
-    a.link-muted { color:var(--brand-teal); text-decoration:none; }
+    .brand-icon { width:74px;height:74px;border-radius:16px;background:#0f766e;display:flex;align-items:center;justify-content:center;color:#fff;font-size:36px; margin: 40px auto 12px; }
+    .card-auth { max-width: 480px; margin: 0 auto; border:0; box-shadow: 0 8px 24px rgba(0,0,0,.08); border-radius:16px; }
+    .btn-teal { background:#0f766e; color:#fff; border-radius:12px; }
+    .btn-teal:hover { background:#0c5f59; color:#fff; }
+    .btn-select { background:#0f766e; color:#fff; border-radius:14px; padding:.9rem 1rem; text-align:left; }
+    .btn-select:hover { background:#0c5f59; color:#fff; }
+    a.link-muted { color:#0f766e; text-decoration:none; }
     a.link-muted:hover { text-decoration:underline; }
     .toast-container { z-index: 1080; }
-    .form-control, .form-select { border-radius: 10px; }
   </style>
 </head>
 <body>
   <div class="container py-4">
-    <div class="row align-items-center min-vh-100">
-      <div class="col-lg-6 d-none d-lg-block">
-        <div class="px-4">
-          <img src="https://cdn.jsdelivr.net/gh/edent/SuperTinyIcons/images/svg/school.svg" alt="Ilustración" class="img-fluid" style="max-height: 360px;">
-        </div>
-      </div>
-      <div class="col-lg-6">
-        <div class="brand-icon">
-          <span>🎓</span>
-        </div>
-        <div class="text-center mb-3">
-          <h5 class="mb-0">Sistema Académico</h5>
-          <small class="text-muted">Gestión Educativa Integral</small>
-        </div>
+    <div class="brand-icon">
+      <span>🎓</span>
+    </div>
+    <div class="text-center mb-3">
+      <h5 class="mb-0">Sistema Académico</h5>
+      <small class="text-muted">Gestión Educativa Integral</small>
+    </div>
     {{-- Toasts (status/warning/errors) --}}
     <div class="toast-container position-fixed top-0 end-0 p-3">
       @if (session('status'))
@@ -71,10 +62,8 @@
       @endif
     </div>
 
-        {{ $slot ?? '' }}
-        @yield('content')
-      </div>
-    </div>
+    {{ $slot ?? '' }}
+    @yield('content')
   </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>

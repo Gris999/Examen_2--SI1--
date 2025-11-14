@@ -199,6 +199,9 @@
               @if($isAdmin || $isDecano || $isDirector || $isDocente)
                 <a class="nav-link {{ request()->routeIs('historial.*') ? 'active' : '' }}" href="{{ route('historial.index') }}"><i class="bi bi-collection me-2"></i>Historial</a>
               @endif
+              @if($isDocente)
+                <a class="nav-link {{ request()->routeIs('docente.portal') ? 'active' : '' }}" href="{{ route('docente.portal') }}"><i class="bi bi-person-lines-fill me-2"></i>Portal Docente</a>
+              @endif
             </div>
           </div>
         </div>
@@ -322,6 +325,9 @@
               @endif
               @if($isAdmin || $isDecano || $isDirector || $isDocente)
                 <a class="list-group-item list-group-item-action {{ request()->routeIs('historial.*') ? 'active' : '' }}" href="{{ route('historial.index') }}">Historial</a>
+                @if($isDocente)
+                  <a class="list-group-item list-group-item-action {{ request()->routeIs('docente.portal') ? 'active' : '' }}" href="{{ route('docente.portal') }}">Portal Docente</a>
+                @endif
               @endif
             </div>
           </div>
@@ -424,9 +430,5 @@
 </script>
 </body>
 </html>
-
-
-
-
 
 

@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@php($title = 'Horarios')
+@php
+  $title = 'Horarios';
+@endphp
 
 @section('content')
 @php
@@ -241,17 +243,5 @@
     </div>
   </div>
  </div>
-
-<script>
-  function validarGenAuto(form){
-    var dias = form.querySelectorAll('input[name="dias[]"]:checked');
-    var slots = form.querySelectorAll('input[name="slots[]"]:checked');
-    if (dias.length === 0 || slots.length === 0) {
-      alert('Selecciona al menos un día y un bloque horario.');
-      return false;
-    }
-    return true;
-  }
-</script>
 
 @endsection

@@ -1,6 +1,7 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Assignments;
+use App\Http\Controllers\Controller;
 
 use App\Imports\DocentesImport;
 use App\Imports\MateriasImport;

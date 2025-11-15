@@ -1,24 +1,26 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\PasswordResetController;
-use App\Http\Controllers\DocenteController;
-use App\Http\Controllers\MateriaController;
-use App\Http\Controllers\GrupoController;
-use App\Http\Controllers\AulaController;
-use App\Http\Controllers\CargaHorariaController;
-use App\Http\Controllers\AprobacionController;
-use App\Http\Controllers\HorarioController;
-use App\Http\Controllers\AsistenciaController;
-use App\Http\Controllers\ConsultaHorarioController;
-use App\Http\Controllers\AsignacionController;
-use App\Http\Controllers\HistorialAsistenciaController;
-use App\Http\Controllers\ReportesController;
-use App\Http\Controllers\UsuarioController;
-use App\Http\Controllers\RolController;
-use App\Http\Controllers\BitacoraController;
-use App\Http\Controllers\DocentePortalController;
+use App\Http\Controllers\Security\AuthController;
+use App\Http\Controllers\Security\PasswordResetController;
+use App\Http\Controllers\Academics\DocenteController;
+use App\Http\Controllers\Academics\MateriaController;
+use App\Http\Controllers\Academics\GrupoController;
+use App\Http\Controllers\Academics\AulaController;
+use App\Http\Controllers\Assignments\CargaHorariaController;
+use App\Http\Controllers\Assignments\AprobacionController;
+use App\Http\Controllers\Assignments\HorarioController;
+use App\Http\Controllers\Attendance\AsistenciaController;
+use App\Http\Controllers\Assignments\ConsultaHorarioController;
+use App\Http\Controllers\Assignments\AsignacionController;
+use App\Http\Controllers\Assignments\ImportacionController;
+use App\Http\Controllers\Attendance\HistorialAsistenciaController;
+use App\Http\Controllers\Reports\ReportesController;
+use App\Http\Controllers\Security\UsuarioController;
+use App\Http\Controllers\Security\RolController;
+use App\Http\Controllers\Reports\BitacoraController;
+use App\Http\Controllers\Attendance\DocentePortalController;
+use App\Http\Controllers\Reports\DashboardController;
 use Illuminate\Support\Facades\App;
 
 // Autenticación
@@ -44,7 +46,7 @@ Route::middleware('web')->group(function () {
             : redirect()->route('login.select');
     })->name('home');
 
-    Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth_simple','audit'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth_simple','audit'])->name('dashboard');
 
     // CU2: Gestionar Docentes
     Route::middleware(['auth_simple','audit'])->group(function () {
@@ -126,12 +128,12 @@ Route::middleware('web')->group(function () {
         Route::get('reportes/aulas/pdf', [ReportesController::class, 'exportarAulasPDF'])->name('reportes.aulas.pdf');
 
         // CU13: Importar Datos Masivos
-        Route::get('importaciones', [\App\Http\Controllers\ImportacionController::class, 'index'])->name('importaciones.index');
-        Route::get('importaciones/create', [\App\Http\Controllers\ImportacionController::class, 'create'])->name('importaciones.create');
-        Route::post('importaciones', [\App\Http\Controllers\ImportacionController::class, 'store'])->name('importaciones.store');
+        Route::get('importaciones', [ImportacionController::class, 'index'])->name('importaciones.index');
+        Route::get('importaciones/create', [ImportacionController::class, 'create'])->name('importaciones.create');
+        Route::post('importaciones', [ImportacionController::class, 'store'])->name('importaciones.store');
         // Plantillas: priorizar master antes de la genérica y limitar 'tipo'
-        Route::get('importaciones/template/master.xlsx', [\App\Http\Controllers\ImportacionController::class, 'templateMasterXlsx'])->name('importaciones.template.master.xlsx');
-        Route::get('importaciones/template/{tipo}.xlsx', [\App\Http\Controllers\ImportacionController::class, 'templateXlsx'])->where('tipo','(docentes|materias|horarios)')->name('importaciones.template.xlsx');
+        Route::get('importaciones/template/master.xlsx', [ImportacionController::class, 'templateMasterXlsx'])->name('importaciones.template.master.xlsx');
+        Route::get('importaciones/template/{tipo}.xlsx', [ImportacionController::class, 'templateXlsx'])->where('tipo','(docentes|materias|horarios)')->name('importaciones.template.xlsx');
 
         // CU14: Gestionar Usuarios
         Route::middleware('role:administrador,admin,director,director de carrera,coordinador')->group(function(){

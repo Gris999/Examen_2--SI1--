@@ -1,6 +1,7 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Reports;
+use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -245,7 +246,7 @@ class ReportesController extends Controller
         }
         // Reutiliza la vista de impresión del historial pero con título distinto
         $request2 = new Request($request->all());
-        $controller = app(\App\Http\Controllers\HistorialAsistenciaController::class);
+        $controller = app(\App\Http\Controllers\Attendance\HistorialAsistenciaController::class);
         // Usa el mismo ensamblado de filas que print()
         $rowsView = $controller->print($request2);
         $html = $rowsView->render();

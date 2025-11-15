@@ -1,6 +1,7 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Reports;
+use App\Http\Controllers\Controller;
 
 use App\Models\Docente;
 use App\Models\Materia;

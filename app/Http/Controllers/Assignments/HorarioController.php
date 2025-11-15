@@ -1,6 +1,7 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Assignments;
+use App\Http\Controllers\Controller;
 
 use App\Models\Aula;
 use App\Models\Docente;
@@ -11,6 +12,7 @@ use App\Models\Materia;
 use App\Models\Horario;
 use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 
 class HorarioController extends Controller
 {
@@ -69,12 +71,18 @@ class HorarioController extends Controller
             ->when($materiaId, fn($q)=>$q->where('id_materia',$materiaId))
             ->get();
         $aproCount = $dmgFilter->count();
+        $materias = $dmgFilter->pluck('id_materia')->unique()->values();
+        $gestiones = $dmgFilter->pluck('id_gestion')->unique()->values();
         $toProcess = 0;
-        foreach ($dmgFilter as $dmg) {
-            $grps = Grupo::where('id_materia',$dmg->id_materia)->where('id_gestion',$dmg->id_gestion)->get();
-            foreach ($grps as $gr) {
-                if (!Horario::where('id_grupo',$gr->id_grupo)->exists()) { $toProcess++; }
-            }
+        if ($materias->isNotEmpty() || $gestiones->isNotEmpty()) {
+            $toProcess = Grupo::when($materias->isNotEmpty(), fn($q)=>$q->whereIn('id_materia',$materias))
+                ->when($gestiones->isNotEmpty(), fn($q)=>$q->whereIn('id_gestion',$gestiones))
+                ->whereNotExists(function ($q) {
+                    $q->select(DB::raw(1))
+                        ->from('horarios')
+                        ->whereColumn('horarios.id_grupo','grupos.id_grupo');
+                })
+                ->count();
         }
 
         $docentes = Docente::with('usuario')->orderBy('id_docente','desc')->get();

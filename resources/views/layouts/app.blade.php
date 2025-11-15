@@ -433,9 +433,10 @@
       });
     }
 
-    setupAccordionState('desktop','menuAccordion');
-    setupAccordionState('mobile','mobileAccordion');
-  })();
+  setupAccordionState('desktop','menuAccordion');
+  setupAccordionState('mobile','mobileAccordion');
+})();
 </script>
+@yield('scripts')
 </body>
 </html>

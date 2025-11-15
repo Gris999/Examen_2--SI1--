@@ -1,6 +1,7 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Attendance;
+use App\Http\Controllers\Controller;
 
 use App\Models\Asistencia;
 use App\Models\Docente;

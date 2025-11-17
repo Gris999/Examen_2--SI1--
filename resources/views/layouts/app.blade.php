@@ -21,12 +21,18 @@
     main.content-wrap { min-height: 100vh; }
     .sidebar-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index:1040; pointer-events:none; opacity:0; transition: opacity .2s ease; }
     .sidebar-backdrop.visible { opacity:1; pointer-events:auto; }
+    .mobile-dashboard-toggle { position: fixed; top: 1rem; left: 1rem; z-index: 1090; width: 40px; height: 40px; display:flex; align-items:center; justify-content:center; background: #495057; border: none; color: #fff; }
+    .mobile-dashboard-toggle:focus { outline: none; box-shadow: 0 0 0 0.25rem rgba(15, 118, 110, 0.25); }
     @media(max-width: 991px){
       .sidebar { transform: translateX(-100%); }
       .sidebar.sidebar-open { transform: translateX(0); }
       .content-wrap { margin-left: 0; width: 100%; }
     }
   </style>
+
+  <button class="mobile-dashboard-toggle d-lg-none rounded-circle btn btn-dark" type="button" data-sidebar-toggle aria-label="Abrir menú">
+    <i class="bi bi-list"></i>
+  </button>
 
 <div class="toast-container position-fixed top-0 end-0 p-3">
   @if (session('status'))

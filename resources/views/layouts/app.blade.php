@@ -9,22 +9,18 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body>
-<style>
-  .toast-container { z-index: 1080; }
-  html, body { width:100%; max-width:100%; overflow-x:hidden; }
-  .sidebar { width: 260px; min-height: 100vh; position: fixed; top:0; left:0; background: #0b2239; display:flex; flex-direction:column; overflow-y:auto; z-index:1050; }
-  .sidebar .user { padding: 16px; border-bottom: 1px solid rgba(255,255,255,.08); }
-  .sidebar .user .circle { width:44px;height:44px;border-radius:50%;background:#0f766e;color:#fff;display:flex;align-items:center;justify-content:center; font-weight:600; font-size:18px; }
-  .sidebar a.nav-link { color: #d7e1ea; border-radius: 10px; padding: 11px 12px; font-size: 0.95rem; }
-  .sidebar a.nav-link.active, .sidebar a.nav-link:hover { background:#113252; color:#fff; }
-  .content-wrap { margin-left: 0; position: relative; width:100%; overflow-x:hidden; }
-  main.content-wrap { min-height: 100vh; }
-  @media(min-width: 992px){ .content-wrap { margin-left: 260px; width: calc(100% - 260px); } }
-  .topbar { position: sticky; top:0; z-index:1060; background:#fff; border-bottom:1px solid #edf2f7; padding:.75rem 1rem; }
-  .crumb { color:#6c757d; }
-  .btn-teal { background:#0f766e; color:#fff; border-color:#0f766e; }
-  .btn-teal:hover { background:#0c5f59; border-color:#0c5f59; color:#fff; }
-</style>
+  <style>
+    .toast-container { z-index: 1080; }
+    html, body { width:100%; max-width:100%; overflow-x:hidden; }
+    .sidebar { width: 260px; min-height: 100vh; position: fixed; top:0; left:0; background: #0b2239; display:flex; flex-direction:column; overflow-y:auto; z-index:1050; }
+    .sidebar .user { padding: 16px; border-bottom: 1px solid rgba(255,255,255,.08); }
+    .sidebar .user .circle { width:44px;height:44px;border-radius:50%;background:#0f766e;color:#fff;display:flex;align-items:center;justify-content:center; font-weight:600; font-size:18px; }
+    .sidebar a.nav-link { color: #d7e1ea; border-radius: 10px; padding: 11px 12px; font-size: 0.95rem; }
+    .sidebar a.nav-link.active, .sidebar a.nav-link:hover { background:#113252; color:#fff; }
+    .content-wrap { margin-left: 260px; position: relative; width: calc(100% - 260px); overflow-x:hidden; }
+    main.content-wrap { min-height: 100vh; }
+    @media(max-width: 991px){ .content-wrap { margin-left: 260px; width: calc(100% - 260px); } }
+  </style>
 
 <div class="toast-container position-fixed top-0 end-0 p-3">
   @if (session('status'))
@@ -72,7 +68,7 @@
     </form>
   </div>
 
-  <aside class="sidebar d-none d-lg-flex flex-column text-white">
+  <aside class="sidebar d-flex flex-column text-white">
     <div class="user d-flex align-items-center gap-2">
       <div class="circle">{{ strtoupper(substr(auth()->user()->nombre ?? auth()->user()->correo,0,1)) }}</div>
       <div>

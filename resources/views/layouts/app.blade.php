@@ -96,7 +96,7 @@
     @endphp
     @if($isDocente)
       <nav class="p-2">
-        <a class="nav-link {{ request()->routeIs('docente.portal') ? 'active' : '' }}" href="{{ route('docente.portal') }}"><i class="bi bi-house me-2"></i>Portal Docente</a>
+        <a class="nav-link {{ request()->routeIs('docente.portal') ? 'active' : '' }}" href="{{ route('docente.portal') }}"><i class="bi bi-house me-2"></i>Horario Semanal</a>
         <a class="nav-link {{ request()->routeIs('asistencias.create') ? 'active' : '' }}" href="{{ route('asistencias.create') }}"><i class="bi bi-clipboard-check me-2"></i>Registro de asistencia</a>
         <a class="nav-link {{ request()->routeIs('historial.*') ? 'active' : '' }}" href="{{ route('historial.index') }}"><i class="bi bi-collection me-2"></i>Historial de asistencia</a>
       </nav>
@@ -208,7 +208,7 @@
                 <a class="nav-link {{ request()->routeIs('historial.*') ? 'active' : '' }}" href="{{ route('historial.index') }}"><i class="bi bi-collection me-2"></i>Historial</a>
               @endif
               @if($isDocente)
-                <a class="nav-link {{ request()->routeIs('docente.portal') ? 'active' : '' }}" href="{{ route('docente.portal') }}"><i class="bi bi-person-lines-fill me-2"></i>Portal Docente</a>
+                <a class="nav-link {{ request()->routeIs('docente.portal') ? 'active' : '' }}" href="{{ route('docente.portal') }}"><i class="bi bi-person-lines-fill me-2"></i>Horario Semanal</a>
               @endif
             </div>
           </div>
@@ -335,7 +335,7 @@
               @if($isAdmin || $isDecano || $isDirector || $isDocente)
                 <a class="list-group-item list-group-item-action {{ request()->routeIs('historial.*') ? 'active' : '' }}" href="{{ route('historial.index') }}">Historial</a>
                 @if($isDocente)
-                  <a class="list-group-item list-group-item-action {{ request()->routeIs('docente.portal') ? 'active' : '' }}" href="{{ route('docente.portal') }}">Portal Docente</a>
+                  <a class="list-group-item list-group-item-action {{ request()->routeIs('docente.portal') ? 'active' : '' }}" href="{{ route('docente.portal') }}">Horario Semanal</a>
                 @endif
               @endif
             </div>
@@ -381,7 +381,7 @@
           <a href="{{ route('carga.create') }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-lg me-1"></i>Nueva Asignación</a>
         @elseif(str_starts_with($r,'horarios.'))
           <a href="{{ route('horarios.create') }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-lg me-1"></i>Nuevo Horario</a>
-        @elseif(str_starts_with($r,'asistencias.') && (($isAdmin ?? false) || ($isDirector ?? false) || ($isDocente ?? false)))
+        @elseif(str_starts_with($r,'asistencias.') && !request()->routeIs('asistencias.create') && (($isAdmin ?? false) || ($isDirector ?? false) || ($isDocente ?? false)))
           <a href="{{ route('asistencias.create') }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-lg me-1"></i>Registrar Asistencia</a>
         @endif
       </div>

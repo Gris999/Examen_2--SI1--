@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Reports;
+namespace App\Http\Controllers\ReportesYDatos;
 use App\Http\Controllers\Controller;
 
 use App\Models\Docente;

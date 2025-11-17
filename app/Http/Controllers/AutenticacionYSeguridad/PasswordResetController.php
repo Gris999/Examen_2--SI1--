@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Security;
+namespace App\Http\Controllers\AutenticacionYSeguridad;
 use App\Http\Controllers\Controller;
 
 use App\Models\Usuario;

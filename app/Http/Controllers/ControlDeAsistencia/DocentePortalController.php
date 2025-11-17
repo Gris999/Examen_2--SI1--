@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Controllers\Attendance;
+namespace App\Http\Controllers\ControlDeAsistencia;
 use App\Http\Controllers\Controller;
 
 use App\Models\Asistencia;
 use App\Models\Docente;
 use App\Models\Horario;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DocentePortalController extends Controller
 {
@@ -50,6 +51,47 @@ class DocentePortalController extends Controller
         return view('docentes.portal', compact(
             'docente','horarios','asistencias','total','presentes','retrasos','ausentes','justificadas','presencia','horariosHoy','hoy','primerHorarioHoy'
         ));
+    }
+
+    public function exportHorarios()
+    {
+        $docente = $this->docenteActual();
+        if (!$docente) {
+            abort(404);
+        }
+
+        $horarios = Horario::with(['grupo.materia','grupo.gestion','aula'])
+            ->whereHas('docenteMateriaGestion', fn($q)=> $q->where('id_docente', $docente->id_docente))
+            ->orderBy('dia')
+            ->orderBy('hora_inicio')
+            ->get();
+
+        $fecha = \Carbon\Carbon::now('America/La_Paz')->format('Ymd');
+        $filename = "horario-semanal-{$fecha}.csv";
+
+        $response = new StreamedResponse(function () use ($horarios) {
+            $handle = fopen('php://output', 'w');
+            fputs($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, ['Día','Materia','Grupo','Aula','Hora'], ';');
+            foreach ($horarios as $horario) {
+                fputcsv($handle, [
+                    $horario->dia,
+                    $horario->grupo->materia->nombre ?? '',
+                    $horario->grupo->nombre_grupo ?? '',
+                    $horario->aula->nombre ?? '-',
+                    sprintf('%s - %s',
+                        substr($horario->hora_inicio, 0, 5),
+                        substr($horario->hora_fin, 0, 5)
+                    ),
+                ], ';');
+            }
+            fclose($handle);
+        });
+
+        $response->headers->set('Content-Type', 'text/csv; charset=UTF-8');
+        $response->headers->set('Content-Disposition', "attachment; filename=\"{$filename}\"");
+
+        return $response;
     }
 
     private function docenteActual(): ?Docente

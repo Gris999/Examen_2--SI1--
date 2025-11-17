@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Attendance;
+namespace App\Http\Controllers\ControlDeAsistencia;
 use App\Http\Controllers\Controller;
 
 use App\Models\Asistencia;

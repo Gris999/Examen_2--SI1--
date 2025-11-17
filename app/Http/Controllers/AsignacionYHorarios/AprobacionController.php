@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Assignments;
+namespace App\Http\Controllers\AsignacionYHorarios;
 use App\Http\Controllers\Controller;
 
 use App\Models\DocenteMateriaGestion as DMG;

@@ -3,6 +3,9 @@
 
 @section('content')
 @php($mode = request()->get('modo','manual'))
+@php($esDocente = $esDocente ?? false)
+@php($horarioSeleccionado = $horarioSeleccionado ?? null)
+@php($diaHoraActual = $diaHoraActual ?? null)
 <div class="d-flex justify-content-between align-items-center mb-3">
   <div>
     <h4 class="mb-0">Registrar Asistencia</h4>
@@ -14,44 +17,66 @@
   </div>
 </div>
 
-<form method="GET" action="{{ route('asistencias.create') }}" class="row g-2 mb-3">
-  <div class="col-md-4">
+@if($esDocente)
+  <div class="row g-2 mb-3">
+    <div class="col-md-4">
     <label class="form-label">Fecha</label>
-    <input type="date" name="fecha" value="{{ $fecha }}" class="form-control" onchange="this.form.submit()">
+    <input type="date" value="{{ $fecha }}" class="form-control" readonly>
   </div>
-</form>
+  </div>
+@else
+  <form method="GET" action="{{ route('asistencias.create') }}" class="row g-2 mb-3">
+    <div class="col-md-4">
+      <label class="form-label">Fecha</label>
+      <input type="date" name="fecha" value="{{ $fecha }}" class="form-control" onchange="this.form.submit()">
+    </div>
+  </form>
+@endif
 
 <div data-mode-section="manual">
   <form method="POST" action="{{ route('asistencias.store') }}" class="row g-3">
   @csrf
   <input type="hidden" name="fecha" value="{{ $fecha }}">
   <div class="col-md-12">
-    <label class="form-label">Horario (Docente / Materia / Grupo / Gestión — Día — Hora — Aula)</label>
-    <select name="id_horario" class="form-select" required>
-      <option value="">Seleccione...</option>
-      @foreach($horarios as $h)
-        <option value="{{ $h->id_horario }}">
-          {{ $h->docenteMateriaGestion->docente->usuario->nombre ?? '' }} {{ $h->docenteMateriaGestion->docente->usuario->apellido ?? '' }} —
-          {{ $h->grupo->materia->nombre ?? '' }} ({{ $h->grupo->nombre_grupo ?? '' }} / {{ $h->grupo->gestion->codigo ?? '' }}) —
-          {{ $h->dia }} {{ substr($h->hora_inicio,0,5) }}-{{ substr($h->hora_fin,0,5) }} — {{ $h->aula->nombre ?? '-' }}
-        </option>
-      @endforeach
-    </select>
-  </div>
-  <div class="col-md-4">
-    <label class="form-label">Método</label>
-    <select name="metodo" class="form-select">
-      @foreach(['FORM','MANUAL'] as $m)
-        <option value="{{ $m }}">{{ $m }}</option>
-      @endforeach
-    </select>
+    <label class="form-label">{{ $esDocente ? 'Horario disponible' : 'Horario (Docente / Materia / Grupo / Gestión - Día - Hora - Aula)' }}</label>
+    @if($esDocente)
+      @if($horarioSeleccionado)
+        <div class="border rounded-3 p-3 mb-2 bg-white shadow-sm">
+          <div class="fw-semibold">{{ $horarioSeleccionado->grupo->materia->nombre ?? '' }} - {{ $horarioSeleccionado->grupo->nombre_grupo ?? '' }}</div>
+          <div class="text-muted small">
+            {{ $horarioSeleccionado->grupo->gestion->codigo ?? 'Gestión sin código' }} · {{ $horarioSeleccionado->dia }}
+            · {{ substr($horarioSeleccionado->hora_inicio,0,5) }} - {{ substr($horarioSeleccionado->hora_fin,0,5) }}
+            · Aula {{ $horarioSeleccionado->aula->nombre ?? '-' }}
+          </div>
+          <div class="text-muted small">
+            ¿Este horario no aparece? Confirma que tu sesión esté programada para hoy y la hora actual en Bolivia.
+          </div>
+        </div>
+        <input type="hidden" name="id_horario" value="{{ $horarioSeleccionado->id_horario }}">
+      @else
+        <div class="alert alert-info mb-0">
+          No se encontró una clase programada para {{ $diaHoraActual }}. Revisa tu horario semanal.
+        </div>
+      @endif
+    @else
+      <select name="id_horario" class="form-select" required>
+        <option value="">Seleccione...</option>
+        @foreach($horarios as $h)
+          <option value="{{ $h->id_horario }}">
+            {{ $h->docenteMateriaGestion->docente->usuario->nombre ?? '' }} {{ $h->docenteMateriaGestion->docente->usuario->apellido ?? '' }} -
+            {{ $h->grupo->materia->nombre ?? '' }} ({{ $h->grupo->nombre_grupo ?? '' }} / {{ $h->grupo->gestion->codigo ?? '' }}) -
+            {{ $h->dia }} {{ substr($h->hora_inicio,0,5) }}-{{ substr($h->hora_fin,0,5) }} - {{ $h->aula->nombre ?? '-' }}
+          </option>
+        @endforeach
+      </select>
+    @endif
   </div>
   <div class="col-md-8">
     <label class="form-label">Justificación (opcional)</label>
     <input type="text" name="justificacion" class="form-control" placeholder="Motivo o comentario...">
   </div>
     <div class="col-12 d-flex gap-2">
-      <button class="btn btn-teal" type="submit">Guardar</button>
+      <button class="btn btn-teal" type="submit" @if($esDocente && !$horarioSeleccionado) disabled @endif>Guardar</button>
       <a href="{{ route('asistencias.index') }}" class="btn btn-outline-secondary">Cancelar</a>
     </div>
   </form>
@@ -87,7 +112,7 @@
         </div>
       @else
         <div class="alert alert-info mb-0">
-          No tienes horarios activos hoy. Usa el módulo de Horarios para generar tus sesiones aprobadas.
+          No se encontró una clase programada para la fecha y hora actual ({{ $diaHoraActual ?? 'actual' }}). Revisa tu horario semanal.
         </div>
       @endif
     </div>
@@ -95,10 +120,6 @@
 </div>
 
 <hr>
-<div class="text-muted">
-  <strong>Registrar por QR</strong>
-  <p class="mb-0">Alterna entre el modo manual y el modo QR usando los botones superiores.</p>
-</div>
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {

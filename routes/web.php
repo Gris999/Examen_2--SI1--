@@ -1,26 +1,26 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Security\AuthController;
-use App\Http\Controllers\Security\PasswordResetController;
-use App\Http\Controllers\Academics\DocenteController;
-use App\Http\Controllers\Academics\MateriaController;
-use App\Http\Controllers\Academics\GrupoController;
-use App\Http\Controllers\Academics\AulaController;
-use App\Http\Controllers\Assignments\CargaHorariaController;
-use App\Http\Controllers\Assignments\AprobacionController;
-use App\Http\Controllers\Assignments\HorarioController;
-use App\Http\Controllers\Attendance\AsistenciaController;
-use App\Http\Controllers\Assignments\ConsultaHorarioController;
-use App\Http\Controllers\Assignments\AsignacionController;
-use App\Http\Controllers\Assignments\ImportacionController;
-use App\Http\Controllers\Attendance\HistorialAsistenciaController;
-use App\Http\Controllers\Reports\ReportesController;
-use App\Http\Controllers\Security\UsuarioController;
-use App\Http\Controllers\Security\RolController;
-use App\Http\Controllers\Reports\BitacoraController;
-use App\Http\Controllers\Attendance\DocentePortalController;
-use App\Http\Controllers\Reports\DashboardController;
+use App\Http\Controllers\AutenticacionYSeguridad\AuthController;
+use App\Http\Controllers\AutenticacionYSeguridad\PasswordResetController;
+use App\Http\Controllers\GestionAcademica\DocenteController;
+use App\Http\Controllers\GestionAcademica\MateriaController;
+use App\Http\Controllers\GestionAcademica\GrupoController;
+use App\Http\Controllers\GestionAcademica\AulaController;
+use App\Http\Controllers\AsignacionYHorarios\CargaHorariaController;
+use App\Http\Controllers\AsignacionYHorarios\AprobacionController;
+use App\Http\Controllers\AsignacionYHorarios\HorarioController;
+use App\Http\Controllers\ControlDeAsistencia\AsistenciaController;
+use App\Http\Controllers\AsignacionYHorarios\ConsultaHorarioController;
+use App\Http\Controllers\AsignacionYHorarios\AsignacionController;
+use App\Http\Controllers\AsignacionYHorarios\ImportacionController;
+use App\Http\Controllers\ControlDeAsistencia\HistorialAsistenciaController;
+use App\Http\Controllers\ReportesYDatos\ReportesController;
+use App\Http\Controllers\AutenticacionYSeguridad\UsuarioController;
+use App\Http\Controllers\AutenticacionYSeguridad\RolController;
+use App\Http\Controllers\ReportesYDatos\BitacoraController;
+use App\Http\Controllers\ControlDeAsistencia\DocentePortalController;
+use App\Http\Controllers\ReportesYDatos\DashboardController;
 use Illuminate\Support\Facades\App;
 
 // Autenticación
@@ -72,6 +72,7 @@ Route::middleware('web')->group(function () {
 
         Route::middleware('role:docente')->group(function () {
             Route::get('docente/portal', [DocentePortalController::class, 'index'])->name('docente.portal');
+            Route::get('docente/portal/export', [DocentePortalController::class, 'exportHorarios'])->name('docente.portal.export');
         });
         Route::get('aulas/disponibilidad', [AulaController::class, 'disponibilidad'])->name('aulas.disponibilidad');
 

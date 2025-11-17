@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Attendance;
+namespace App\Http\Controllers\ControlDeAsistencia;
 use App\Http\Controllers\Controller;
 
 use App\Models\Asistencia;
@@ -50,11 +50,13 @@ class AsistenciaController extends Controller
 
     public function create(Request $request)
     {
-        $fecha = $request->date('fecha') ?: \Carbon\Carbon::now('America/La_Paz')->toDateString();
+        $now = \Carbon\Carbon::now('America/La_Paz');
+        $docente = $this->docenteActual();
+        $esDocente = $docente !== null;
+        $fecha = $esDocente ? $now->toDateString() : ($request->date('fecha') ?: $now->toDateString());
         $iso = \Carbon\Carbon::parse($fecha, 'America/La_Paz')->dayOfWeekIso;
         $map = [1=>'Lunes',2=>'Martes',3=>'Miércoles',4=>'Jueves',5=>'Viernes',6=>'Sábado',7=>'Domingo'];
         $dow = $map[$iso] ?? 'Lunes';
-        $docente = $this->docenteActual();
 
         $horarios = Horario::with(['grupo.materia','grupo.gestion','docenteMateriaGestion.docente.usuario','aula'])
             ->where('dia', $dow)
@@ -68,7 +70,9 @@ class AsistenciaController extends Controller
             ->get();
 
         $horariosHoy = $this->horariosDocenteParaHoy($docente);
-        return view('asistencias.create', compact('horarios','fecha','horariosHoy'));
+        $horarioSeleccionado = $this->horarioActivoParaDocente($horariosHoy);
+        $diaHoraActual = $this->dowName($now->dayOfWeekIso) . ' a las ' . $now->format('H:i');
+        return view('asistencias.create', compact('horarios','fecha','horariosHoy','esDocente','horarioSeleccionado','diaHoraActual'));
     }
 
     public function store(Request $request)
@@ -86,14 +90,20 @@ class AsistenciaController extends Controller
             return back()->withErrors(['id_horario' => 'El horario no tiene docente asignado.'])->withInput();
         }
 
+        $docente = $this->docenteActual();
+        $now = \Carbon\Carbon::now('America/La_Paz');
+        if ($docente && $data['fecha'] !== $now->toDateString()) {
+            return back()->withErrors(['fecha' => 'Los docentes solo pueden registrar asistencia para la fecha actual.'])->withInput();
+        }
+
         // Si el usuario es DOCENTE, solo puede registrar para sus propios horarios
-        if ($docente = $this->docenteActual()) {
+        if ($docente) {
             if ((int)$docente->id_docente !== (int)$docenteId) {
                 return back()->withErrors(['id_horario' => 'No puede registrar asistencia para un horario que no le pertenece.'])->withInput();
             }
         }
 
-        $now = \Carbon\Carbon::now('America/La_Paz');
+        $estado = $now->format('H:i') > $horario->hora_inicio ? 'RETRASO' : 'PRESENTE';
         $estado = $now->format('H:i') > $horario->hora_inicio ? 'RETRASO' : 'PRESENTE';
 
         $existsKey = [
@@ -227,6 +237,22 @@ class AsistenciaController extends Controller
             ->whereIn('id_docente_materia_gestion', $ids)
             ->orderBy('hora_inicio','asc')
             ->get();
+    }
+
+    private function horarioActivoParaDocente($horarios)
+    {
+        if ($horarios->isEmpty()) { return null; }
+        $ahora = \Carbon\Carbon::now('America/La_Paz');
+        $ajusteInicio = 15;
+        $ajusteFin = 10;
+        foreach ($horarios as $horario) {
+            $inicio = \Carbon\Carbon::parse($horario->hora_inicio, 'America/La_Paz')->subMinutes($ajusteInicio);
+            $fin = \Carbon\Carbon::parse($horario->hora_fin, 'America/La_Paz')->addMinutes($ajusteFin);
+            if ($ahora->between($inicio, $fin)) {
+                return $horario;
+            }
+        }
+        return null;
     }
 
     private function dowName(int $iso): string

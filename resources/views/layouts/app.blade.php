@@ -12,14 +12,20 @@
   <style>
     .toast-container { z-index: 1080; }
     html, body { width:100%; max-width:100%; overflow-x:hidden; }
-    .sidebar { width: 260px; min-height: 100vh; position: fixed; top:0; left:0; background: #0b2239; display:flex; flex-direction:column; overflow-y:auto; z-index:1050; }
+    .sidebar { width: 260px; min-height: 100vh; position: fixed; top:0; left:0; background: #0b2239; display:flex; flex-direction:column; overflow-y:auto; z-index:1050; transition: transform .25s ease; }
     .sidebar .user { padding: 16px; border-bottom: 1px solid rgba(255,255,255,.08); }
     .sidebar .user .circle { width:44px;height:44px;border-radius:50%;background:#0f766e;color:#fff;display:flex;align-items:center;justify-content:center; font-weight:600; font-size:18px; }
     .sidebar a.nav-link { color: #d7e1ea; border-radius: 10px; padding: 11px 12px; font-size: 0.95rem; }
     .sidebar a.nav-link.active, .sidebar a.nav-link:hover { background:#113252; color:#fff; }
     .content-wrap { margin-left: 260px; position: relative; width: calc(100% - 260px); overflow-x:hidden; }
     main.content-wrap { min-height: 100vh; }
-    @media(max-width: 991px){ .content-wrap { margin-left: 260px; width: calc(100% - 260px); } }
+    .sidebar-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index:1040; pointer-events:none; opacity:0; transition: opacity .2s ease; }
+    .sidebar-backdrop.visible { opacity:1; pointer-events:auto; }
+    @media(max-width: 991px){
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.sidebar-open { transform: translateX(0); }
+      .content-wrap { margin-left: 0; width: 100%; }
+    }
   </style>
 
 <div class="toast-container position-fixed top-0 end-0 p-3">
@@ -57,18 +63,18 @@
 </div>
 @auth
   <!-- Mobile topbar -->
-  <div class="d-lg-none topbar d-flex justify-content-between align-items-center">
-    <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu" aria-controls="mobileMenu">
-      <i class="bi bi-list"></i>
+  <div class="d-lg-none topbar d-flex justify-content-between align-items-center px-3 py-2">
+    <button class="btn btn-link text-white p-0" type="button" data-sidebar-toggle>
+      <i class="bi bi-list fs-4"></i>
     </button>
-    <div class="fw-semibold">Académico</div>
+    <div class="fw-semibold">{{ $title ?? (ucfirst(str_replace('.', ' ', request()->route()->getName())) ) }}</div>
     <form method="POST" action="{{ route('logout') }}">
       @csrf
       <button class="btn btn-danger btn-sm"><i class="bi bi-box-arrow-right me-1"></i>Salir</button>
     </form>
   </div>
 
-  <aside class="sidebar d-flex flex-column text-white">
+  <aside class="sidebar d-flex flex-column text-white" id="mainSidebar">
     <div class="user d-flex align-items-center gap-2">
       <div class="circle">{{ strtoupper(substr(auth()->user()->nombre ?? auth()->user()->correo,0,1)) }}</div>
       <div>
@@ -81,6 +87,11 @@
         @csrf
         <button class="btn btn-danger btn-sm w-100"><i class="bi bi-box-arrow-right me-1"></i>Salir</button>
       </form>
+    </div>
+    <div class="d-flex justify-content-end d-lg-none px-2">
+      <button class="btn btn-link text-white p-0" type="button" data-sidebar-close aria-label="Cerrar menú">
+        <i class="bi bi-x-lg fs-4"></i>
+      </button>
     </div>
     @php
       $roles = auth()->user()->roles()->pluck('nombre')->map(fn($n)=>mb_strtolower($n))->toArray();
@@ -229,6 +240,7 @@
     </nav>
     @endif
   </aside>
+  <div class="sidebar-backdrop" data-sidebar-backdrop></div>
 
   <!-- Offcanvas mobile menu -->
   <div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="mobileMenu" aria-labelledby="mobileMenuLabel">
@@ -431,6 +443,23 @@
 
   setupAccordionState('desktop','menuAccordion');
   setupAccordionState('mobile','mobileAccordion');
+
+  var sidebar = document.querySelector('.sidebar');
+  var toggleSidebar = document.querySelector('[data-sidebar-toggle]');
+  var closeSidebarBtn = document.querySelector('[data-sidebar-close]');
+  var backdrop = document.querySelector('[data-sidebar-backdrop]');
+  function openSidebar(){ sidebar && sidebar.classList.add('sidebar-open'); backdrop && backdrop.classList.add('visible'); }
+  function closeSidebar(){ sidebar && sidebar.classList.remove('sidebar-open'); backdrop && backdrop.classList.remove('visible'); }
+  if(toggleSidebar){
+    toggleSidebar.addEventListener('click', function(){ sidebar && (sidebar.classList.contains('sidebar-open') ? closeSidebar() : openSidebar()); });
+  }
+  if(closeSidebarBtn){ closeSidebarBtn.addEventListener('click', closeSidebar); }
+  if(backdrop){ backdrop.addEventListener('click', closeSidebar); }
+  var media = window.matchMedia('(min-width: 992px)');
+  function resetSidebar(e){ if(e.matches){ closeSidebar(); } }
+  if(media.addEventListener){ media.addEventListener('change', resetSidebar); }
+  else if(media.addListener){ media.addListener(resetSidebar); }
+  resetSidebar(media);
 })();
 </script>
 @yield('scripts')
